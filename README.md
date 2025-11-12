@@ -1,5 +1,5 @@
 # snacky.js 
-#LightWeight Modern Web Snackbar Made by js 
+👉 [**Live Demo**](https://rezasoltani1378.github.io/Snacky.js/index.html)
 
 
 
@@ -14,7 +14,7 @@
 
 A professional, zero-dependency, and highly customizable snackbar notification library for the modern web. Created by **Mohammadreza Soltani**.
 
-![snacky.js demo](https://github.com/rezasoltani1378/Snacky.js/raw/refs/heads/main/demo.webm)
+![snacky.js demo](https://github.com/rezasoltani1378/Snacky.js/blob/main/ezgif-7e23db2d6d308f5c.gif)
 
 `snacky.js` provides a simple API to create beautiful, responsive, and performant notifications that feel native on both desktop and mobile.
 
