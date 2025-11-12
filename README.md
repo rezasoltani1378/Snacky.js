@@ -14,7 +14,7 @@
 
 A professional, zero-dependency, and highly customizable snackbar notification library for the modern web. Created by **Mohammadreza Soltani**.
 
-![snacky.js demo](https://github.com/rezasoltani1378/Snacky.js/blob/8c702d0edd6c45116606188e4844cdf23aba4caf/demo.webm)
+![snacky.js demo](https://github.com/rezasoltani1378/Snacky.js/raw/refs/heads/main/demo.webm)
 
 `snacky.js` provides a simple API to create beautiful, responsive, and performant notifications that feel native on both desktop and mobile.
 
