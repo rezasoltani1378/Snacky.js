@@ -1,5 +1,5 @@
 # snacky.js 
-👉 [**Live Demo**](https://rezasoltani1378.github.io/Snacky.js/index.html)
+👉 [**Live Demo**](https://github.com/rezasoltani1378/Snacky.js/blob/main/index.html)
 
 
 
