@@ -1,12 +1,12 @@
-# snacky.js
+# snacky.js 
+#LightWeight Modern Web Snackbar Made by js 
 
-![Snacky.js Banner](https://user-images.githubusercontent.com/7921352/200133758-e3745a76-a070-4f36-9b5a-73d09a05b38f.png) 
-<!-- You should create a nice banner image and replace the URL above -->
+
 
 <p align="center">
   <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000" />
   <img alt="Size" src="https://img.shields.io/bundlephobia/minzip/snacky?label=size&style=flat-square" /> 
-  <!-- Replace 'snacky' with your npm package name later -->
+ 
   <a href="LICENSE">
     <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
   </a>
@@ -14,7 +14,7 @@
 
 A professional, zero-dependency, and highly customizable snackbar notification library for the modern web. Created by **Mohammadreza Soltani**.
 
-**[Insert a GIF of snacky.js in action here. This is highly recommended!]**
+![snacky.js demo](https://github.com/rezasoltani1378/Snacky.js/blob/8c702d0edd6c45116606188e4844cdf23aba4caf/demo.webm)
 
 `snacky.js` provides a simple API to create beautiful, responsive, and performant notifications that feel native on both desktop and mobile.
 
@@ -38,8 +38,8 @@ Getting started with snacky.js is incredibly easy.
 Simply add this script tag to the bottom of your HTML body.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/your-username/snacky.js/snacky.js"></script>
-<!-- Make sure to replace 'your-username' with your actual GitHub username after you publish! -->
+<script src="https://cdn.jsdelivr.net/gh/rezasoltani1378/snacky.js/snacky.js"></script>
+
 ```
 
 ### Method 2: Manual Installation
