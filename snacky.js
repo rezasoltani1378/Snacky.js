@@ -1,9 +1,10 @@
- /**
+/**
  * snacky.js | A professional, zero-dependency snackbar library.
- * Version: 1.0.0
+ * Version: 2.1.0
  * Created by: Mohammadreza Soltani
+
  */
-const snacky = ( () => {
+const snacky = (() => {
     let isInitialized = false;
     const containerStore = {};
     const defaultConfig = {
@@ -17,174 +18,297 @@ const snacky = ( () => {
         wordHighlight: null,
         soundEffect: false,
         vibrate: false,
+
+        // NEW: text behavior
+        maxLines: 3,      // clamp lines for long text
+        expandable: false // allow full expansion on click (optional)
     };
+
     const MAX_SNACKBARS = 5;
+
     const ICONS = {
-        info: `<svg viewBox="0 0 24 24"><path class="snacky-icon-path snacky-icon-circle" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path class="snacky-icon-path snacky-icon-dot" d="M12 8h.01"/><path class="snacky-icon-path snacky-icon-line" d="M12 11v5"/></svg>`,
-        warning: `<svg viewBox="0 0 24 24"><path class="snacky-icon-path snacky-icon-triangle" d="M1 21h22L12 2 1 21z"/><path class="snacky-icon-path snacky-icon-dot" d="M12 18h.01"/><path class="snacky-icon-path snacky-icon-line" d="M12 9v6"/></svg>`,
-        success: `<svg viewBox="0 0 24 24"><path class="snacky-icon-path snacky-icon-circle" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path class="snacky-icon-path snacky-icon-checkmark" d="m9 12 2 2 4-4"/></svg>`,
-        error: `<svg viewBox="0 0 24 24"><path class="snacky-icon-path snacky-icon-circle" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path class="snacky-icon-path snacky-icon-cross-1" d="m15 9-6 6"/><path class="snacky-icon-path snacky-icon-cross-2" d="m9 9 6 6"/></svg>`,
-        cart: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.21 9l-4.38-6.56a1 1 0 0 0-1.66 0L6.79 9H2a1 1 0 0 0 0 2h2.33l2.43 10.39a1 1 0 0 0 1 .61h9.48a1 1 0 0 0 1-.61L19.67 11H22a1 1 0 0 0 0-2h-4.79zm-4.64 0L12 7.74 11.43 9H7.93l2.12 9h3.9l2.12-9h-3.5z"/></svg>`,
-        online: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="m21.48 11.13-9-9a.5.5 0 0 0-.7 0l-9 9a.5.5 0 0 0 .35.87H5v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7h2.15a.5.5 0 0 0 .35-.87zM14 18h-4v-5h4v5z"/></svg>`,
-        offline: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.3 4.7a1 1 0 0 0-1.4 0L12 10.59 6.1 4.7a1 1 0 0 0-1.4 1.4L10.59 12l-5.9 5.9a1 1 0 1 0 1.4 1.4L12 13.41l5.9 5.9a1 1 0 0 0 1.4-1.4L13.41 12l5.9-5.9a1 1 0 0 0 0-1.4z"/></svg>`,
-        wishlist: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
-        favorite: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
-        saved: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>`,
-        download: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13v4h-2v-4H8l4-4 4 4h-3z"/></svg>`,
-        loading: `<svg class="snacky-spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle></svg>`
+        info: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="10" x2="12" y2="16" />
+          <circle cx="12" cy="7.5" r="1" class="snacky-dot" />
+        </svg>`,
+        warning: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3L2 21h20L12 3z" />
+          <line x1="12" y1="9" x2="12" y2="14" />
+          <circle cx="12" cy="17" r="1" class="snacky-dot" />
+        </svg>`,
+        success: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M8.5 12.5l2.5 2.5 4.5-5" />
+        </svg>`,
+        error: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="9" y1="9" x2="15" y2="15" />
+          <line x1="15" y1="9" x2="9" y2="15" />
+        </svg>`,
+        cart: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 6h14l-2 9H9L7 6z" />
+          <circle cx="10" cy="20" r="1.5" />
+          <circle cx="17" cy="20" r="1.5" />
+          <path d="M5 4h2" />
+        </svg>`,
+        online: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 11l9-9 9 9" />
+          <path d="M5 11v9h14v-9" />
+          <path d="M10 20v-5h4v5" />
+        </svg>`,
+        offline: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="4" y1="4" x2="20" y2="20" />
+          <path d="M5 11l7-7 7 7" />
+          <path d="M7 11v9h10v-9" />
+        </svg>`,
+        wishlist: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 21s-7-4.35-9-8.5C1 8 3.5 5 7 5c2 0 3.5 1.2 5 3 1.5-1.8 3-3 5-3 3.5 0 6 3 4 7.5C19 16.65 12 21 12 21z" />
+        </svg>`,
+        favorite: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" />
+        </svg>`,
+        saved: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z" />
+        </svg>`,
+        download: `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v10" />
+          <path d="M8 9l4 4 4-4" />
+          <rect x="4" y="17" width="16" height="4" rx="1" />
+        </svg>`,
+        loading: `
+        <svg class="snacky-spinner" viewBox="0 0 50 50" aria-hidden="true">
+          <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+        </svg>`
     };
+
     function playNotif() {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    osc.frequency.value = 800;
-    osc.type = 'sine';
-    
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-    
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.2);
-}
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.2);
+    }
 
     const _injectCSS = () => {
         const style = document.createElement('style');
         style.id = 'snacky-library-styles';
         style.textContent = `
-                .snacky-container{position:fixed;z-index:9999;display:flex;flex-direction:column;pointer-events:none;gap:12px}
-                .snacky-container.top-left{top:20px;left:20px;align-items:flex-start}
-                .snacky-container.top-center{top:20px;left:50%;transform:translateX(-50%);align-items:center}
-                .snacky-container.top-right{top:20px;right:20px;align-items:flex-end}
-                .snacky-container.bottom-left{bottom:20px;left:20px;align-items:flex-start}
-                .snacky-container.bottom-center{bottom:20px;left:50%;transform:translateX(-50%);align-items:center}
-                .snacky-container.bottom-right{bottom:20px;right:20px;align-items:flex-end}
-                .snacky-item{display:flex;background:rgba(30,30,30,0.9);color:#f5f5f5;padding:14px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.25);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);min-width:320px;max-width:440px;pointer-events:auto;opacity:0;position:relative;overflow:hidden}
-                .snacky-item.show{animation:snacky-in .4s cubic-bezier(.21,1.02,.73,1) forwards}
-                .snacky-item.hide{animation:snacky-out .4s cubic-bezier(.25,.46,.45,.94) forwards}
-                .snacky-item[data-direction="rtl"]{flex-direction:row-reverse}
-                .snacky-content{display:flex;align-items:center;overflow:hidden;width:100%}
-                .snacky-icon{flex-shrink:0;width:24px;height:24px;margin-right:12px}
-                .snacky-item[data-direction="rtl"] .snacky-icon{margin-right:0;margin-left:12px}
-                .snacky-icon svg{width:100%;height:100%}
-                .snacky-icon .snacky-icon-path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-                .snacky-item.info .snacky-icon{color:#58a6ff}.snacky-item.warning .snacky-icon{color:#e3b341}.snacky-item.success .snacky-icon{color:#56d364}.snacky-item.error .snacky-icon{color:#f85149}.snacky-item.cart .snacky-icon{color:#a371f7}.snacky-item.online .snacky-icon{color:#56d364}.snacky-item.offline .snacky-icon{color:#a0a0a0}.snacky-item.wishlist .snacky-icon{color:#db61a2}.snacky-item.favorite .snacky-icon{color:#f0d553}.snacky-item.saved .snacky-icon{color:#58a6ff}.snacky-item.download .snacky-icon{color:#58a6ff}.snacky-item.loading .snacky-icon{color:#a0a0a0}
-                .snacky-message{font-weight:500;font-size:.95rem;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-grow:1;min-width:0;-webkit-mask-image:linear-gradient(to right,black 90%,transparent 100%);mask-image:linear-gradient(to right,black 90%,transparent 100%)}
-                .snacky-item[data-direction="rtl"] .snacky-message{-webkit-mask-image:linear-gradient(to left,black 90%,transparent 100%);mask-image:linear-gradient(to left,black 90%,transparent 100%);text-align:right}
-                .snacky-message strong{font-weight:700;color:#fff}
-                .snacky-progress-bar{position:absolute;bottom:0;left:0;height:4px;width:100%;background:rgba(255,255,255,0.15);animation:snacky-progress linear forwards;overflow:hidden}
-                .snacky-progress-bar::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:snacky-shine 1.5s infinite}
-                .snacky-icon-circle,.snacky-icon-triangle{stroke-dasharray:60;stroke-dashoffset:60}.snacky-icon-checkmark{stroke-dasharray:10;stroke-dashoffset:10}.snacky-icon-cross-1,.snacky-icon-cross-2{stroke-dasharray:10;stroke-dashoffset:10}.snacky-icon-dot{fill-opacity:0}.snacky-icon-line{stroke-dasharray:10;stroke-dashoffset:10}
-                .snacky-item.show .snacky-icon-circle,.snacky-item.show .snacky-icon-triangle{animation:snacky-draw .4s .2s ease-out forwards}
-                .snacky-item.show.success .snacky-icon-checkmark{animation:snacky-draw .3s .5s ease-out forwards}
-                .snacky-item.show.error .snacky-icon-cross-1{animation:snacky-draw .2s .5s ease-out forwards}
-                .snacky-item.show.error .snacky-icon-cross-2{animation:snacky-draw .2s .6s ease-out forwards}
-                .snacky-item.show .snacky-icon-line{animation:snacky-draw .2s .5s ease-out forwards}
-                .snacky-item.show .snacky-icon-dot{animation:snacky-pop-in .2s .4s ease-out forwards}
-                @keyframes snacky-draw{to{stroke-dashoffset:0}}
-                @keyframes snacky-pop-in{to{fill-opacity:1}}
-                @keyframes snacky-in{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
-                @keyframes snacky-out{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(20px) scale(.95)}}
-                @keyframes snacky-progress{from{width:100%}to{width:0%}}
-                @keyframes snacky-shine{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-                @keyframes snacky-rotate{100%{transform:rotate(360deg)}}
-                @keyframes snacky-dash{0%{stroke-dasharray:1,150;stroke-dashoffset:0}50%{stroke-dasharray:90,150;stroke-dashoffset:-35}100%{stroke-dasharray:90,150;stroke-dashoffset:-124}}
-                .snacky-spinner{animation:snacky-rotate 2s linear infinite}.snacky-spinner .path{stroke:currentColor;stroke-linecap:round;animation:snacky-dash 1.5s ease-in-out infinite}
-                @media(max-width:768px){.snacky-container{left:10px!important;right:10px!important;width:auto!important;transform:none!important;align-items:stretch!important}.snacky-container[class*="top-"]{top:10px!important;bottom:auto!important}.snacky-container[class*="bottom-"]{bottom:10px!important;top:auto!important}.snacky-item{width:100%!important;min-width:unset!important;box-sizing:border-box!important}}
-            `;
+            :root{--snacky-bg:rgba(20,20,20,.92);--snacky-text:#f5f5f5;--snacky-muted:#d6d6d6}
+            .snacky-container{position:fixed;z-index:9999;display:flex;flex-direction:column;pointer-events:none;gap:12px}
+            .snacky-container.top-left{top:20px;left:20px;align-items:flex-start}
+            .snacky-container.top-center{top:20px;left:50%;transform:translateX(-50%);align-items:center}
+            .snacky-container.top-right{top:20px;right:20px;align-items:flex-end}
+            .snacky-container.bottom-left{bottom:20px;left:20px;align-items:flex-start}
+            .snacky-container.bottom-center{bottom:20px;left:50%;transform:translateX(-50%);align-items:center}
+            .snacky-container.bottom-right{bottom:20px;right:20px;align-items:flex-end}
+
+            .snacky-item{
+                display:flex;background:var(--snacky-bg);color:var(--snacky-text);
+                padding:14px 16px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);
+                -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+                border:1px solid rgba(255,255,255,0.1);min-width:320px;max-width:480px;
+                pointer-events:auto;opacity:0;position:relative;overflow:hidden;
+                transform:translateY(12px) scale(.98);
+                transition:transform .35s cubic-bezier(.2,1,.2,1),opacity .35s ease;
+            }
+            .snacky-item.show{opacity:1;transform:translateY(0) scale(1)}
+            .snacky-item.hide{opacity:0;transform:translateY(12px) scale(.98)}
+
+            .snacky-item[data-direction="rtl"]{flex-direction:row-reverse}
+
+            .snacky-content{display:flex;align-items:flex-start;gap:12px;width:100%}
+
+            .snacky-icon{
+                flex-shrink:0;width:26px;height:26px;display:grid;place-items:center;
+                margin-top:1px;
+            }
+            .snacky-item[data-direction="rtl"] .snacky-icon{margin-left:0;margin-right:0}
+
+            .snacky-icon svg{width:100%;height:100%}
+            .snacky-icon svg *{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+            .snacky-icon svg .snacky-dot{fill:currentColor;stroke:none}
+
+            .snacky-item.info .snacky-icon{color:#58a6ff}
+            .snacky-item.warning .snacky-icon{color:#e3b341}
+            .snacky-item.success .snacky-icon{color:#56d364}
+            .snacky-item.error .snacky-icon{color:#f85149}
+            .snacky-item.cart .snacky-icon{color:#a371f7}
+            .snacky-item.online .snacky-icon{color:#56d364}
+            .snacky-item.offline .snacky-icon{color:#a0a0a0}
+            .snacky-item.wishlist .snacky-icon{color:#db61a2}
+            .snacky-item.favorite .snacky-icon{color:#f0d553}
+            .snacky-item.saved .snacky-icon{color:#58a6ff}
+            .snacky-item.download .snacky-icon{color:#58a6ff}
+            .snacky-item.loading .snacky-icon{color:#a0a0a0}
+
+            .snacky-message{
+                font-weight:500;font-size:.96rem;line-height:1.55;color:var(--snacky-text);
+                word-break:break-word;white-space:normal;overflow:hidden;flex-grow:1;min-width:0;
+                display:-webkit-box;-webkit-box-orient:vertical;
+            }
+            .snacky-item[data-direction="rtl"] .snacky-message{text-align:right}
+
+            .snacky-message strong{font-weight:700;color:#fff}
+
+            .snacky-progress-bar{
+                position:absolute;bottom:0;left:0;height:4px;width:100%;
+                background:rgba(255,255,255,0.12);overflow:hidden;
+            }
+            .snacky-progress-bar::before{
+                content:'';position:absolute;top:0;left:0;height:100%;width:100%;
+                background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);
+                animation:snacky-shine 1.5s infinite;
+            }
+            .snacky-progress-bar .snacky-progress-fill{
+                height:100%;width:100%;background:rgba(255,255,255,0.35);
+                transform-origin:left;animation:snacky-progress linear forwards;
+            }
+
+            @keyframes snacky-progress{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+            @keyframes snacky-shine{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+            @keyframes snacky-rotate{100%{transform:rotate(360deg)}}
+            @keyframes snacky-dash{0%{stroke-dasharray:1,150;stroke-dashoffset:0}50%{stroke-dasharray:90,150;stroke-dashoffset:-35}100%{stroke-dasharray:90,150;stroke-dashoffset:-124}}
+
+            .snacky-spinner{animation:snacky-rotate 1.7s linear infinite}
+            .snacky-spinner .path{stroke:currentColor;stroke-linecap:round;animation:snacky-dash 1.5s ease-in-out infinite}
+
+            @media(max-width:768px){
+                .snacky-container{left:10px!important;right:10px!important;width:auto!important;transform:none!important;align-items:stretch!important}
+                .snacky-container[class*="top-"]{top:10px!important;bottom:auto!important}
+                .snacky-container[class*="bottom-"]{bottom:10px!important;top:auto!important}
+                .snacky-item{width:100%!important;min-width:unset!important;box-sizing:border-box!important}
+            }
+        `;
         document.head.appendChild(style);
-    }
-    ;
+    };
+
     const _createContainer = (position) => {
-        if (containerStore[position])
-            return containerStore[position];
+        if (containerStore[position]) return containerStore[position];
         const container = document.createElement('div');
         container.className = `snacky-container ${position.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
         document.body.appendChild(container);
         containerStore[position] = container;
         return container;
-    }
-    ;
+    };
+
     const _hideAndRemove = (snackbar) => {
         snackbar.classList.add('hide');
-        snackbar.addEventListener('animationend', (e) => {
-            if (e.animationName !== 'snacky-out')
-                return;
+        const cleanup = () => {
             const container = snackbar.parentElement;
             snackbar.remove();
             if (container && container.childElementCount === 0) {
                 container.remove();
                 for (const pos in containerStore) {
-                    if (containerStore[pos] === container)
-                        delete containerStore[pos];
+                    if (containerStore[pos] === container) delete containerStore[pos];
                 }
             }
-        }
-        , {
-            once: true
-        });
-    }
-    ;
+        };
+        snackbar.addEventListener('transitionend', cleanup, { once: true });
+        // fallback if transition doesn't fire
+        setTimeout(cleanup, 450);
+    };
+
     const _init = () => {
-        if (isInitialized)
-            return;
+        if (isInitialized) return;
         _injectCSS();
         isInitialized = true;
-    }
-    ;
-    const show = (message, options={}) => {
+    };
+
+    const show = (message, options = {}) => {
         _init();
-        const settings = {
-            ...defaultConfig,
-            ...options
-        };
+        const settings = { ...defaultConfig, ...options };
+
         const container = _createContainer(settings.position);
         if (container.childElementCount >= MAX_SNACKBARS) {
-            const snackbarToRemove = settings.position.startsWith('top') ? container.lastElementChild : container.firstElementChild;
+            const snackbarToRemove = settings.position.startsWith('top')
+                ? container.lastElementChild
+                : container.firstElementChild;
             _hideAndRemove(snackbarToRemove);
         }
+
         const snackbar = document.createElement('div');
         snackbar.className = `snacky-item ${settings.type}`;
         snackbar.setAttribute('data-direction', settings.direction);
+
         let content = `<div class="snacky-content">`;
+
         if (settings.icon === 'show') {
             content += `<div class="snacky-icon">${ICONS[settings.type] || ICONS.info}</div>`;
         }
+
         const messageDiv = document.createElement('div');
         messageDiv.className = 'snacky-message';
+        if (settings.maxLines) {
+            messageDiv.style.webkitLineClamp = settings.maxLines;
+        }
+
         if (settings.wordHighlight) {
-            const highlightWords = Array.isArray(settings.wordHighlight) ? settings.wordHighlight : [settings.wordHighlight];
-            const regex = new RegExp(`(${highlightWords.join('|').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,'gi');
+            const highlightWords = Array.isArray(settings.wordHighlight)
+                ? settings.wordHighlight
+                : [settings.wordHighlight];
+            const regex = new RegExp(
+                `(${highlightWords.join('|').replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')})`,
+                'gi'
+            );
             messageDiv.innerHTML = message.replace(regex, '<strong>$1</strong>');
         } else {
             messageDiv.textContent = message;
         }
+
         content += messageDiv.outerHTML + `</div>`;
+
         if (settings.progressBar === 'show' && settings.autoHide) {
-            content += `<div class="snacky-progress-bar" style="animation-duration: ${settings.duration}ms;"></div>`;
+            content += `
+                <div class="snacky-progress-bar">
+                    <div class="snacky-progress-fill" style="animation-duration:${settings.duration}ms;"></div>
+                </div>
+            `;
         }
+
         snackbar.innerHTML = content;
-        if (settings.position.startsWith('top')) {
-            container.prepend(snackbar);
-        } else {
-            container.appendChild(snackbar);
+
+        if (settings.expandable) {
+            snackbar.addEventListener('click', () => {
+                const msg = snackbar.querySelector('.snacky-message');
+                if (!msg) return;
+                if (msg.style.webkitLineClamp === 'unset') {
+                    msg.style.webkitLineClamp = settings.maxLines || 3;
+                } else {
+                    msg.style.webkitLineClamp = 'unset';
+                }
+            });
         }
-        if (settings.soundEffect){
-          playNotif();
-            }
-        if (settings.vibrate && 'vibrate'in navigator)
-            navigator.vibrate(100);
-        requestAnimationFrame( () => snackbar.classList.add('show'));
+
+        if (settings.position.startsWith('top')) container.prepend(snackbar);
+        else container.appendChild(snackbar);
+
+        if (settings.soundEffect) playNotif();
+        if (settings.vibrate && 'vibrate' in navigator) navigator.vibrate(100);
+
+        requestAnimationFrame(() => snackbar.classList.add('show'));
+
         if (settings.autoHide) {
-            setTimeout( () => _hideAndRemove(snackbar), settings.duration);
+            setTimeout(() => _hideAndRemove(snackbar), settings.duration);
         }
-    }
-    ;
-    return {
-        show
     };
-}
-)();
+
+    return { show };
+})();
