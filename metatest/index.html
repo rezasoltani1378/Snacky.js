@@ -1142,8 +1142,24 @@
 
   const world = document.getElementById('depth-world');
   const symbolEls = [];
+  const isMobile = window.innerWidth <= 900;
 
-  SYMBOLS.forEach(cfg => {
+  SYMBOLS.forEach(raw => {
+    // On small screens the desktop values render symbols nearly invisible and
+    // half off-screen, so boost opacity/motion and pull them into the viewport.
+    const cfg = isMobile ? {
+      ...raw,
+      scale: raw.scale * 0.72,
+      opacity: Math.min(raw.opacity * 2.6, 0.42),
+      factor: raw.factor * 1.7,
+      rotSpeed: raw.rotSpeed * 1.5
+    } : raw;
+    if (isMobile) {
+      // Clamp horizontally so the whole symbol stays inside the narrow screen
+      const widthPct = (80 * cfg.scale / window.innerWidth) * 100;
+      cfg.x = Math.min(Math.max(cfg.x, 2), Math.max(2, 96 - widthPct));
+    }
+
     const el = document.createElement('div');
     el.className = 'symbol';
     const size = 80 * cfg.scale;
@@ -1162,11 +1178,24 @@
   let targetY = 0;
   let currentY = 0;
 
-  const isMobile = window.innerWidth <= 900;
-  const ease = isMobile ? 0.08 : 0.06;
+  // Mobile: follow the native scroll 1:1 — the browser's inertia is already
+  // smooth and any lerp on top of it reads as input lag. Desktop: light,
+  // responsive smoothing instead of the previous heavy delay.
+  const ease = isMobile ? 1 : 0.16;
 
   let sectionsData = [];
+  let iconsData = [];
   const wH = window.innerHeight;
+
+  // Absolute static offset of an element measured against #smooth-content
+  function absoluteTop(el) {
+    let top = 0;
+    while (el && el !== smoothContent) {
+      top += el.offsetTop;
+      el = el.offsetParent;
+    }
+    return top;
+  }
 
   // Track Native Scrollbar Position
   window.addEventListener('scroll', () => {
@@ -1191,6 +1220,18 @@
       };
     });
 
+    // Map each lord-icon by its own exact position so playback is triggered
+    // when the icon itself scrolls into view, not when its section reveals
+    iconsData = Array.from(document.querySelectorAll('lord-icon')).map(icon => {
+      const wrap = icon.closest('.slide-icon-wrap') || icon;
+      return {
+        icon,
+        top: absoluteTop(wrap),
+        height: wrap.offsetHeight,
+        inView: false
+      };
+    });
+
     // Reapply calculated translation position
     smoothContent.style.transform = `translate3d(0, -${currentY}px, 0)`;
   }
@@ -1199,6 +1240,39 @@
   const resizeObserver = new ResizeObserver(() => syncHeight());
   resizeObserver.observe(smoothContent);
   window.addEventListener('load', syncHeight);
+
+  /* Robust lord-icon playback (handles not-yet-ready players) */
+  function playLordIcon(icon) {
+    const tryPlay = () => {
+      try {
+        if (typeof icon.playFromBeginning === 'function') {
+          icon.playFromBeginning();
+        } else if (icon.playerInstance && typeof icon.playerInstance.playFromBeginning === 'function') {
+          icon.playerInstance.playFromBeginning();
+        } else if (typeof icon.play === 'function') {
+          icon.play();
+        } else if (icon.playerInstance && typeof icon.playerInstance.play === 'function') {
+          icon.playerInstance.play();
+        } else if (icon.playerInstance && icon.playerInstance.state && icon.playerInstance.state.player) {
+          icon.playerInstance.state.player.play();
+        }
+      } catch (e) {
+        console.warn("Lordicon play failed:", e);
+      }
+    };
+
+    if (icon.playerInstance) {
+      tryPlay();
+      return;
+    }
+    const readyHandler = () => {
+      setTimeout(tryPlay, 100);
+      icon.removeEventListener('ready', readyHandler);
+    };
+    icon.addEventListener('ready', readyHandler);
+    // Fallback: try playing after a short delay in case 'ready' already fired
+    setTimeout(tryPlay, 300);
+  }
 
   /* Animated count-up for stat numbers (Persian digits) */
   function animateCounters(scope) {
@@ -1251,48 +1325,19 @@
           if (sec.el.querySelector('.stat-value[data-target]')) {
             animateCounters(sec.el);
           }
+        }
+      });
 
-          // FIXED: Lordicon trigger logic
-          const icon = sec.el.querySelector('lord-icon');
-          if (icon) {
-            // Try multiple approaches to play the icon
-            const tryPlayIcon = () => {
-              try {
-                // Approach 1: Direct play method
-                if (typeof icon.play === 'function') {
-                  icon.play();
-                }
-                // Approach 2: Use player instance
-                else if (icon.playerInstance && typeof icon.playerInstance.play === 'function') {
-                  icon.playerInstance.play();
-                }
-                // Approach 3: Trigger via lottie player
-                else if (icon.playerInstance && icon.playerInstance.state && icon.playerInstance.state.player) {
-                  icon.playerInstance.state.player.play();
-                }
-              } catch (e) {
-                console.warn("Lordicon play failed:", e);
-              }
-            };
-
-            // Check if icon is already ready
-            if (icon.playerInstance) {
-              tryPlayIcon();
-            }
-            // Wait for it to be ready
-            else {
-              // Remove old listener to prevent duplicates
-              const readyHandler = () => {
-                // Small delay to ensure player is fully initialized
-                setTimeout(tryPlayIcon, 100);
-                icon.removeEventListener('ready', readyHandler);
-              };
-              icon.addEventListener('ready', readyHandler);
-
-              // Fallback: Try playing after a short delay
-              setTimeout(tryPlayIcon, 300);
-            }
-          }
+      // Lord-icon playback — fires exactly when each icon enters the viewport
+      // and re-arms once it leaves, so it plays again on every pass
+      iconsData.forEach(ic => {
+        const rel = ic.top - roundY;
+        const visible = rel < wH * 0.78 && rel + ic.height > wH * 0.05;
+        if (visible && !ic.inView) {
+          ic.inView = true;
+          playLordIcon(ic.icon);
+        } else if (!visible && ic.inView) {
+          ic.inView = false;
         }
       });
     }
