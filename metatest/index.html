@@ -55,6 +55,16 @@
       will-change: transform; pointer-events: auto;
     }
 
+    /* Native scroll mode (touch devices): the page stays in normal flow and
+       scrolls natively — transforming one huge composited layer per frame is
+       what makes iOS Safari lag, so we never do it there. */
+    html.native-scroll #smooth-wrapper {
+      position: static; height: auto; overflow: visible; pointer-events: auto;
+    }
+    html.native-scroll #smooth-content {
+      position: relative; top: auto; left: auto; will-change: auto;
+    }
+
     /* ─── DEPTH LAYERS (PARALLAX ON BACKGROUND) ────── */
     .depth-world {
       position: absolute; inset: 0;
@@ -269,6 +279,7 @@
     .t-card {
       width: 360px; flex-shrink: 0; direction: rtl; padding: 26px; border-radius: 18px;
       background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06);
+      -webkit-backdrop-filter: blur(6px);
       backdrop-filter: blur(6px);
       transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative; overflow: hidden;
@@ -436,6 +447,7 @@
       position: fixed; bottom: 28px; left: 28px; z-index: 100;
       width: 46px; height: 46px; border-radius: 14px;
       border: 1px solid rgba(139,92,246,0.35); background: rgba(12,12,22,0.85);
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px); color: var(--accent2);
       display: flex; align-items: center; justify-content: center; cursor: pointer;
       opacity: 0; visibility: hidden; transform: translateY(14px);
@@ -448,6 +460,11 @@
 
     /* ─── MOBILE RESPONSIVENESS ────────────────────── */
     @media (max-width: 900px) {
+      /* Perf: per-element filters repaint on every scroll frame and are very
+         expensive on mobile GPUs (especially iOS Safari) — drop them there. */
+      .symbol svg { filter: none; }
+      .t-card, .back-to-top { -webkit-backdrop-filter: none; backdrop-filter: none; }
+
       header { padding: 0 24px; height: 76px; }
       .header-btn span { display: none; }
       .header-btn { width: 42px; height: 42px; padding: 0; border-radius: 12px; }
@@ -1144,6 +1161,14 @@
   const symbolEls = [];
   const isMobile = window.innerWidth <= 900;
 
+  // Any touch-first device (Android, iPhone, iPad) scrolls natively: the
+  // fixed-wrapper + transform technique is what causes heavy lag on iOS Safari.
+  const isTouch = window.matchMedia('(pointer: coarse)').matches
+          || 'ontouchstart' in window
+          || navigator.maxTouchPoints > 0;
+  const nativeMode = isMobile || isTouch;
+  if (nativeMode) document.documentElement.classList.add('native-scroll');
+
   SYMBOLS.forEach(raw => {
     // On small screens the desktop values render symbols nearly invisible and
     // half off-screen, so boost opacity/motion and pull them into the viewport.
@@ -1168,7 +1193,7 @@
     el.style.opacity = cfg.opacity; el.style.zIndex = cfg.layer;
     if (cfg.svg && SVG_LIB[cfg.svg]) el.innerHTML = SVG_LIB[cfg.svg];
     world.appendChild(el);
-    symbolEls.push({ el, cfg });
+    symbolEls.push({ el, cfg, size });
   });
 
   /* ─── PRODUCTION READY SCROLL ENGINE ─────────── */
@@ -1177,11 +1202,11 @@
 
   let targetY = 0;
   let currentY = 0;
+  let worldH = 0;
 
-  // Mobile: follow the native scroll 1:1 — the browser's inertia is already
-  // smooth and any lerp on top of it reads as input lag. Desktop: light,
-  // responsive smoothing instead of the previous heavy delay.
-  const ease = isMobile ? 1 : 0.16;
+  // Desktop smoothing is time-based so it behaves identically on 60Hz and
+  // 120Hz displays. Higher = snappier (converges ~95% in ~200ms at 15/s).
+  const SMOOTH_RATE = 15;
 
   let sectionsData = [];
   let iconsData = [];
@@ -1197,19 +1222,22 @@
     return top;
   }
 
-  // Track Native Scrollbar Position
+  // Track Native Scrollbar Position (clamped: iOS rubber-banding goes negative)
   window.addEventListener('scroll', () => {
-    targetY = window.scrollY;
+    targetY = Math.max(0, window.scrollY);
     backToTop.classList.toggle('show', window.scrollY > 600);
   }, { passive: true });
 
   // Sync scrollable height of body dynamically
   function syncHeight() {
     // Unset transform temporarily to get flawless native client height
-    smoothContent.style.transform = `translate3d(0, 0, 0)`;
+    if (!nativeMode) smoothContent.style.transform = `translate3d(0, 0, 0)`;
 
-    const exactHeight = smoothContent.getBoundingClientRect().height;
-    document.body.style.height = `${exactHeight}px`;
+    worldH = smoothContent.getBoundingClientRect().height;
+
+    // In native mode the content is in normal flow, so the browser manages
+    // the scroll height itself — never force a body height there.
+    document.body.style.height = nativeMode ? '' : `${worldH}px`;
 
     // Map the absolute static coordinate of sections
     sectionsData = Array.from(document.querySelectorAll('.aww-section, .reveal-section')).map(sec => {
@@ -1233,7 +1261,7 @@
     });
 
     // Reapply calculated translation position
-    smoothContent.style.transform = `translate3d(0, -${currentY}px, 0)`;
+    if (!nativeMode) smoothContent.style.transform = `translate3d(0, -${currentY}px, 0)`;
   }
 
   // Set ResizeObserver to continuously track layout mutations
@@ -1293,20 +1321,41 @@
   }
 
   // Unified Render Loop
-  function render() {
-    if (Math.abs(targetY - currentY) > 0.01) {
-      currentY += (targetY - currentY) * ease;
-      const roundY = Math.round(currentY * 100) / 100;
+  let lastRenderedY = -1;
+  let lastFrameTime = performance.now();
 
-      // Translate Page Layer
-      smoothContent.style.transform = `translate3d(0, -${roundY}px, 0)`;
+  function render(now) {
+    if (nativeMode) {
+      // Touch devices: follow the native scroll position 1:1, zero lag
+      currentY = targetY;
+    } else {
+      // Desktop: time-based exponential smoothing (frame-rate independent)
+      const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
+      currentY += (targetY - currentY) * (1 - Math.exp(-SMOOTH_RATE * dt));
+      if (Math.abs(targetY - currentY) < 0.05) currentY = targetY;
+    }
+    lastFrameTime = now;
+
+    if (Math.abs(currentY - lastRenderedY) > 0.01) {
+      lastRenderedY = currentY;
+      const roundY = Math.max(0, Math.round(currentY * 100) / 100);
+
+      // Translate Page Layer (skipped entirely in native scroll mode)
+      if (!nativeMode) {
+        smoothContent.style.transform = `translate3d(0, -${roundY}px, 0)`;
+      }
 
       // Translate Parallax Symbols relative to active scroll
       for (let i = 0; i < symbolEls.length; i++) {
-        const { el, cfg } = symbolEls[i];
+        const { el, cfg, size } = symbolEls[i];
 
         // Symbols move forward relative to scroll translation to look delayed (Parallax)
         const scrollOffset = roundY * cfg.factor;
+
+        // Skip symbols far outside the viewport — big per-frame saving on mobile
+        const effectiveTop = (worldH * cfg.y / 100) + scrollOffset;
+        if (worldH && (effectiveTop + size < roundY - 250 || effectiveTop > roundY + wH + 250)) continue;
+
         const driftX = Math.sin((roundY * 0.002) + cfg.phase) * (50 * cfg.factor);
         const rot = (roundY * cfg.rotSpeed * 0.12) % 360;
 
