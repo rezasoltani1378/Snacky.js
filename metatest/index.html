@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>متاتست — پلتفرم جامع ارزیابی و آزمون هوشمند</title>
+  <meta name="description" content="متاتست یک پلتفرم جامع برای تمرین دروس، تحلیل عملکرد، ساخت آزمون آنلاین رقابتی و دسترسی به معلم خصوصی هوش مصنوعی است." />
+  <meta name="keywords" content="متاتست, آزمون آنلاین, آزمون ساز, معلم خصوصی هوش مصنوعی, تمرین دروس مدرسه, تحلیل تحصیلی" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="متاتست — پلتفرم جامع ارزیابی و آزمون هوشمند" />
+  <meta property="og:description" content="با متاتست در محیطی شبیه بازی دروس خود را تمرین کنید، در آزمون‌های آنلاین رقابت کنید و از معلم خصوصی هوش مصنوعی کمک بگیرید." />
+  <meta property="og:type" content="website" />
+
+  <link href="/app/assets/font.css" rel="stylesheet" type="text/css" />
+  <script src="lordicon.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #05050A;
+      --surface: #0C0C16;
+      --accent: #8B5CF6;
+      --accent2: #A78BFA;
+      --text: #F8F7FF;
+      --text-mid: #C4BCE8;
+      --text-dim: #8B87AA;
+      --hdr: 88px;
+    }
+
+    html {
+      background: var(--bg);
+      -webkit-text-size-adjust: 100%;
+      overflow-x: clip;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'alibaba', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      width: 100%;
+      overscroll-behavior-y: none;
+    }
+    body { overflow-x: clip; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+    /* Native document scroll on every device. The old fixed-wrapper +
+       per-frame page transform is what made iOS Safari laggy and buggy. */
+    #smooth-wrapper {
+      position: relative;
+      width: 100%;
+      overflow: visible;
+      pointer-events: auto;
+      z-index: 10;
+    }
+    #smooth-content {
+      position: relative;
+      width: 100%;
+    }
+
+    /* ─── DEPTH SYMBOLS (inline SVG, scroll-linked move + rotate) ─ */
+    .depth-world {
+      position: absolute; inset: 0;
+      z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .symbol {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform;
+      transform-origin: 50% 50%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .symbol svg {
+      width: 100%; height: 100%;
+      display: block;
+      overflow: visible;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .shine-title { animation: none; background-position: 50% 50%; }
+    }
+
+    /* Frosted plates for stats + testimonials headings only */
+    .glass-panel {
+      position: relative;
+      isolation: isolate;
+      background:
+        linear-gradient(165deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 38%, rgba(8,8,16,0.62) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      backdrop-filter: blur(18px) saturate(140%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 24px 50px -28px rgba(0,0,0,0.55);
+    }
+
+    .ambient-veil {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background:
+              radial-gradient(circle at 15% 10%, rgba(139,92,246,0.06) 0%, transparent 40%),
+              radial-gradient(circle at 85% 85%, rgba(124,58,237,0.05) 0%, transparent 40%);
+    }
+
+    /* ─── TYPOGRAPHY & EFFECTS ─────────────────────── */
+    .shine-title {
+      width: fit-content;
+      max-width: 100%;
+      color: var(--accent2);
+      background-image: linear-gradient(
+        90deg,
+        #8B5CF6 0%,
+        #C4B5FD 28%,
+        #FFFFFF 50%,
+        #C4B5FD 72%,
+        #8B5CF6 100%
+      );
+      background-size: 200% 100%;
+      background-position: 0% 50%;
+      background-repeat: repeat-x;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      animation: shine 8s linear infinite;
+    }
+    /* 0% and 100% are the same tile (size 200% → shift 200%), so the loop never snaps.
+       Sweep is linear; the rest of the cycle holds so it does not run constantly. */
+    @keyframes shine {
+      0% { background-position: 0% 50%; }
+      38% { background-position: 200% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    /* Section eyebrow pill */
+    .sec-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 16px; border-radius: 100px;
+      background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.25);
+      color: var(--accent2); font-size: 12.5px; font-weight: 600;
+      margin-bottom: 20px; letter-spacing: 0.2px;
+    }
+    .sec-eyebrow::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 10px var(--accent);
+      animation: pulse-dot 2.2s ease infinite;
+    }
+    @keyframes pulse-dot { 50% { opacity: 0.35; transform: scale(0.8); } }
+
+    /* ─── HEADER ───────────────────────────────────── */
+    header {
+      position: relative; z-index: 50;
+      height: var(--hdr); display: flex; align-items: center; justify-content: space-between;
+      padding: 0 56px;
+      background: rgba(5,5,10,0.55);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      backdrop-filter: blur(16px) saturate(140%);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .logo { display: flex; align-items: center; text-decoration: none; }
+    .logo-img { width: 60px; height: 60px; object-fit: contain; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .logo:hover .logo-img { transform: scale(1.1); }
+
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .header-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 40px; padding: 0 18px; border-radius: 10px;
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      color: var(--text-mid); font-size: 13.5px; font-weight: 500; text-decoration: none; transition: all 0.3s;
+    }
+    .header-btn svg { width: 16px; height: 16px; opacity: 0.7; transition: opacity 0.3s; }
+    .header-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); }
+    .header-btn:hover svg { opacity: 1; }
+
+    /* ─── HERO ─────────────────────────────────────── */
+    .hero {
+      min-height: calc(100vh - var(--hdr)); padding: 40px 56px 80px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 10;
+    }
+    .hero-inner {
+      width: 100%; max-width: 1200px;
+      display: flex; align-items: center; justify-content: space-between; gap: 60px;
+    }
+    .hero-slider-wrap { flex: 1; display: flex; flex-direction: column; align-items: flex-start; z-index: 10; }
+
+    .slides-container { position: relative; width: 100%; min-height: 160px; margin-bottom: 24px; }
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+      opacity: 0; pointer-events: none; transform: translateY(30px); filter: blur(10px);
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide.active { opacity: 1; pointer-events: auto; transform: translateY(0); filter: blur(0); }
+    .slide.leaving { opacity: 0; transform: translateY(-30px); filter: blur(10px); }
+
+    .slide-title { font-size: clamp(24px, 3.5vw, 45px); font-weight: 800; line-height: 1.35; margin-bottom: 20px; }
+    .slide-desc { font-size: 16px; line-height: 2; color: var(--text-dim); max-width: 500px; }
+
+    /* Premium Button */
+    .btn-uiverse {
+      width: 170px; height: 50px; margin: 40px 0;
+      background-color: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+      color: var(--text); position: relative; overflow: hidden;
+      font-size: 14.5px; font-weight: 600; text-decoration: none;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); cursor: pointer;
+    }
+    .btn-uiverse:before, .btn-uiverse:after {
+      content: ""; position: absolute; width: 0; height: 2px;
+      background-color: var(--accent); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .btn-uiverse:before { right: 0; top: 0; }
+    .btn-uiverse:after { left: 0; bottom: 0; }
+
+    .btn-uiverse span { position: absolute; width: 100%; height: 100%; left: 0; top: 0; z-index: 1; }
+    .btn-uiverse span:before, .btn-uiverse span:after {
+      content: ""; position: absolute; width: 2px; height: 0; background-color: var(--accent); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .btn-uiverse span:before { right: 0; top: 0; }
+    .btn-uiverse span:after { left: 0; bottom: 0; }
+
+    .btn-uiverse p { position: absolute; width: 100%; height: 100%; padding: 0; margin: 0; transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 2; }
+    .btn-uiverse p:before, .btn-uiverse p:after { position: absolute; width: 100%; left: 0; text-align: center; transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .btn-uiverse p:before { content: attr(data-title); top: 50%; transform: translateY(-50%); }
+    .btn-uiverse p:after { content: attr(data-text); top: 150%; color: var(--text); font-weight: 700; text-shadow: 0 0 12px rgba(139,92,246,0.8); }
+
+    .btn-uiverse:hover { background: rgba(139,92,246,0.08); box-shadow: 0 10px 30px -10px rgba(139,92,246,0.3); }
+    .btn-uiverse:hover:before, .btn-uiverse:hover:after { width: 100%; }
+    .btn-uiverse:hover span:before, .btn-uiverse:hover span:after { height: 100%; }
+    .btn-uiverse:hover p:before { top: -50%; transform: rotate(5deg) scale(0.9); opacity: 0; }
+    .btn-uiverse:hover p:after { top: 50%; transform: translateY(-50%); }
+
+    /* Slider Dots */
+    .slider-dots { display: flex; gap: 8px; margin-top: 10px; }
+    .dot { width: 16px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.15); border: none; cursor: pointer; transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    .dot.active { background: var(--accent); width: 32px; box-shadow: 0 0 12px rgba(139,92,246,0.5); }
+
+    /* Premium Phone Frame (Desktop) */
+    .hero-phone-stage { flex: 0.9; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; height: 520px; }
+    .phone-glow { position: absolute; width: 280px; height: 520px; border-radius: 50px; background: var(--accent); filter: blur(100px); opacity: 0.15; transition: all 0.3s ease; }
+    .phone-frame {
+      position: relative; z-index: 5; width: 280px; height: 520px;
+      border-radius: 48px; background: #05050A; padding: 10px;
+      box-shadow: inset 0 0 4px rgba(255,255,255,0.2), inset 0 0 15px rgba(0,0,0,0.9), 0 40px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+    .phone-screen { position: relative; width: 100%; height: 100%; border-radius: 38px; background: #0A0A12; overflow: hidden; border: 1px solid rgba(255,255,255,0.03); }
+    .phone-notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 110px; height: 32px; border-radius: 20px; background: #000; z-index: 10; box-shadow: inset 0 0 4px rgba(255,255,255,0.1); }
+
+    .phone-screen-placeholder { width: 100%; height: 100%; background: radial-gradient(circle at 50% 0%, #151525 0%, #08080C 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px; position: relative; }
+    .phone-screen-placeholder::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 30%; background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%); }
+    .phone-screen-placeholder .mini-logo { width: 56px; height: 56px; opacity: 0.9; filter: drop-shadow(0 10px 20px rgba(139,92,246,0.3)); }
+    .phone-screen-placeholder p { font-size: 14px; color: var(--text-dim); text-align: center; line-height: 1.8; }
+
+    /* ─── CINEMATIC FEATURES ───────────────────────── */
+    .aww-section { padding: 160px 56px; display: flex; align-items: center; justify-content: center; position: relative; min-height: 70vh; z-index: 10; }
+    .feature-container { display: flex; align-items: center; justify-content: space-between; gap: 100px; max-width: 1120px; width: 100%; }
+    .aww-section:nth-child(even) .feature-container { flex-direction: row-reverse; }
+
+    .slide-icon-wrap { flex-shrink: 0; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; position: relative; }
+    .slide-text { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+    .aww-section:nth-child(even) .slide-text { align-items: flex-start; }
+
+    .sec-title { font-size: clamp(30px, 3.5vw, 42px); font-weight: 800; margin-bottom: 24px; line-height: 1.35; }
+    .sec-desc { font-size: 16.5px; line-height: 2.1; color: var(--text-dim); max-width: 500px; }
+
+    /* Deep Blur Reveal */
+    .reveal-element { opacity: 0; transform: translateY(60px) scale(0.92); filter: blur(15px); transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform, opacity, filter; }
+    .is-visible .reveal-element { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    .stagger-1 { transition-delay: 0s; }
+    .stagger-2 { transition-delay: 0.15s; }
+    .stagger-3 { transition-delay: 0.3s; }
+    .stagger-4 { transition-delay: 0.45s; }
+
+    /* ─── STATS SECTION ────────────────────────────── */
+    .stats-section { padding: 120px 56px 40px; position: relative; z-index: 10; }
+    .stats-inner { max-width: 1120px; margin: 0 auto; }
+    .stats-inner.glass-panel { padding: 48px 40px 40px; }
+    .stats-head { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 60px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .stat-card {
+      position: relative; padding: 38px 24px; border-radius: 20px; text-align: center; overflow: hidden;
+      background: linear-gradient(160deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.07);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+      width: 140px; height: 90px; background: var(--accent); filter: blur(60px);
+      opacity: 0; transition: opacity 0.6s;
+    }
+    .stat-card:hover { transform: translateY(-6px); border-color: rgba(139,92,246,0.35); box-shadow: 0 22px 44px -22px rgba(139,92,246,0.4); }
+    .stat-card:hover::before { opacity: 0.28; }
+    .stat-icon {
+      width: 46px; height: 46px; margin: 0 auto 18px;
+      display: flex; align-items: center; justify-content: center; border-radius: 13px;
+      background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.22); color: var(--accent2);
+    }
+    .stat-icon svg { width: 22px; height: 22px; }
+    .stat-number { font-size: 34px; font-weight: 800; color: var(--text); display: flex; justify-content: center; align-items: baseline; gap: 3px; direction: ltr; }
+    .stat-suffix { color: var(--accent2); font-size: 24px; }
+    .stat-label { margin-top: 10px; font-size: 13.5px; color: var(--text-dim); }
+
+    /* ─── TESTIMONIALS (STUDENT COMMENTS) ──────────── */
+    .testimonials-section { padding: 120px 0 60px; position: relative; z-index: 10; overflow: hidden; }
+    .testimonials-head {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      max-width: 760px; margin: 0 auto 56px; padding: 0 24px;
+    }
+    .testimonials-head.glass-panel { padding: 28px 36px 32px; }
+    .testimonials-head .sec-desc { text-align: center; }
+
+    .marquee-row {
+      overflow: hidden; direction: ltr; padding: 12px 0;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    }
+    .marquee-track { display: flex; width: max-content; animation: marquee-scroll 55s linear infinite; will-change: transform; }
+    .marquee-row.reverse .marquee-track { animation-direction: reverse; animation-duration: 68s; }
+    .marquee-row:hover .marquee-track { animation-play-state: paused; }
+    @keyframes marquee-scroll { to { transform: translateX(-50%); } }
+
+    .marquee-group { display: flex; gap: 24px; padding-left: 24px; }
+    .t-card {
+      width: 360px; flex-shrink: 0; direction: rtl; padding: 26px; border-radius: 18px;
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative; overflow: hidden;
+    }
+    .t-card::after {
+      content: '”'; position: absolute; top: 4px; left: 18px;
+      font-size: 64px; line-height: 1; color: rgba(139,92,246,0.14); pointer-events: none;
+    }
+    .t-card:hover {
+      border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.05);
+      transform: translateY(-5px); box-shadow: 0 18px 36px -20px rgba(139,92,246,0.45);
+    }
+    .t-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+    .t-avatar {
+      width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px; color: #fff;
+      box-shadow: 0 6px 14px -6px rgba(139,92,246,0.6);
+    }
+    .av-1 { background: linear-gradient(135deg, #8B5CF6, #6D28D9); }
+    .av-2 { background: linear-gradient(135deg, #A78BFA, #7C3AED); }
+    .av-3 { background: linear-gradient(135deg, #7C3AED, #4C1D95); }
+    .av-4 { background: linear-gradient(135deg, #C4B5FD, #8B5CF6); }
+    .t-meta { display: flex; flex-direction: column; }
+    .t-name { font-size: 14.5px; font-weight: 700; }
+    .t-grade { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+    .t-stars { display: flex; gap: 3px; margin-inline-start: auto; color: #FBBF24; }
+    .t-stars svg { width: 13px; height: 13px; }
+    .t-stars .off { color: rgba(255,255,255,0.15); }
+    .t-text { font-size: 13.8px; line-height: 2.05; color: var(--text-mid); }
+
+    /* ─── CTA BANNER ───────────────────────────────── */
+    .cta-section { padding: 80px 56px 140px; display: flex; justify-content: center; position: relative; z-index: 10; }
+    .cta-card { position: relative; max-width: 920px; width: 100%; }
+    .cta-inner {
+      position: relative; z-index: 2;
+      padding: 74px 40px; text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .cta-inner .sec-eyebrow {
+      background: none; border: none; padding: 0; margin-bottom: 18px;
+    }
+    .cta-inner .sec-eyebrow::before { display: none; }
+    .cta-title { font-size: clamp(26px, 3.2vw, 40px); font-weight: 800; line-height: 1.55; margin-bottom: 18px; }
+    .cta-desc { color: var(--text-dim); max-width: 580px; line-height: 2.1; font-size: 15.5px; }
+    .cta-inner .btn-uiverse { margin: 38px 0 0; }
+
+    /* ─── FOOTER ───────────────────────────────────── */
+    .modern-footer {
+      position: relative; padding: 0 56px 40px; margin-top: 40px;
+      background: linear-gradient(180deg, transparent, #07070D 14%);
+      z-index: 10; overflow: hidden;
+    }
+    .footer-aurora {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+              radial-gradient(60% 90% at 12% 110%, rgba(139,92,246,0.09), transparent 60%),
+              radial-gradient(50% 80% at 88% 110%, rgba(124,58,237,0.08), transparent 60%);
+    }
+    .footer-glow-line { height: 1px; max-width: 1120px; margin: 0 auto; background: linear-gradient(90deg, transparent, rgba(139,92,246,0.6), transparent); position: relative; }
+
+    .footer-inner { max-width: 1120px; margin: 70px auto 0; display: grid; grid-template-columns: 2.2fr 1fr 1fr 1.3fr; gap: 60px; position: relative; }
+    .footer-brand .logo-img { width: 80px; height: 80px; margin-bottom: 24px; }
+    .footer-desc { color: var(--text-dim); font-size: 14.5px; line-height: 2; max-width: 340px; }
+    .footer-title { color: var(--text); font-size: 14.5px; margin-bottom: 24px; opacity: 0.9; font-weight: 600; position: relative; display: inline-block; }
+    .footer-title::after { content: ''; position: absolute; bottom: -8px; right: 0; width: 22px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, var(--accent), transparent); }
+    .footer-links { display: flex; flex-direction: column; gap: 14px; list-style: none; }
+    .footer-links a { text-decoration: none; color: var(--text-dim); font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: color 0.3s, transform 0.3s; }
+    .footer-links a::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: rgba(139,92,246,0.4); transition: all 0.3s; }
+    .footer-links a:hover { color: var(--accent2); transform: translateX(-4px); }
+    .footer-links a:hover::before { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+    .footer-contact-item { display: flex; align-items: flex-start; gap: 10px; color: var(--text-dim); font-size: 13.5px; margin-bottom: 15px; line-height: 1.85; }
+    .footer-contact-item svg { width: 15px; height: 15px; color: var(--accent2); flex-shrink: 0; margin-top: 4px; }
+
+    /* Social icons */
+    .social-row { display: flex; gap: 12px; margin-top: 26px; }
+    .social-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      color: var(--text-dim); text-decoration: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .social-btn svg { width: 17px; height: 17px; }
+    .social-btn:hover {
+      color: #fff; border-color: rgba(139,92,246,0.5); background: rgba(139,92,246,0.12);
+      transform: translateY(-3px); box-shadow: 0 10px 18px -8px rgba(139,92,246,0.5);
+    }
+
+    /* Modern Trust Badges */
+    .trust-badges-container { display: flex; gap: 16px; margin-top: 24px; }
+    .trust-card {
+      width: 86px; height: 86px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #F4F0FF 100%);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative; overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 0 22px rgba(255,255,255,0.16), 0 8px 20px -12px rgba(139,92,246,0.45);
+    }
+    .trust-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.9), transparent 62%);
+      pointer-events: none;
+    }
+    .trust-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 28px rgba(255,255,255,0.28), 0 12px 24px -10px rgba(139,92,246,0.5);
+    }
+    .trust-card img {
+      position: relative; z-index: 1;
+      max-width: 72%; max-height: 72%; object-fit: contain;
+      filter: brightness(1.12) contrast(1.08) drop-shadow(0 0 6px rgba(255,255,255,0.8));
+    }
+    .trust-card img.enamad {
+      filter: brightness(1.2) contrast(1.05) drop-shadow(0 0 8px rgba(255,255,255,0.85));
+      opacity: 1;
+    }
+    .trust-fallback { font-size: 11px; color: #5B5678; font-weight: 500; text-align: center; position: relative; z-index: 1; }
+
+    .footer-bottom {
+      max-width: 1120px; margin: 70px auto 0; padding-top: 30px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      display: flex; justify-content: space-between; align-items: flex-end;
+      color: var(--text-dim); font-size: 13.5px; opacity: 0.85; position: relative;
+    }
+    .footer-credit {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+    }
+    .created-by-label {
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-dim); opacity: 0.8;
+    }
+    .team-logo {
+      height: 28px; width: auto; display: block;
+      opacity: 0.92; filter: drop-shadow(0 0 10px rgba(167,139,250,0.25));
+    }
+
+    /* ─── BACK TO TOP ──────────────────────────────── */
+    .back-to-top {
+      position: fixed; bottom: 28px; left: 28px; z-index: 100;
+      width: 46px; height: 46px; border-radius: 14px;
+      border: 1px solid rgba(139,92,246,0.35); background: rgba(12,12,22,0.85);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px); color: var(--accent2);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      opacity: 0; visibility: hidden; transform: translateY(14px);
+      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px -12px rgba(139,92,246,0.5);
+    }
+    .back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+    .back-to-top:hover { background: rgba(139,92,246,0.18); transform: translateY(-3px); color: #fff; }
+    .back-to-top svg { width: 18px; height: 18px; }
+
+    /* ─── MOBILE / TOUCH PERFORMANCE (esp. iOS Safari) ─ */
+    @media (max-width: 900px), (pointer: coarse) {
+      header,
+      .glass-panel,
+      .t-card,
+      .back-to-top {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+      header { background: rgba(5,5,10,0.92); }
+      .glass-panel {
+        background: rgba(8, 8, 16, 0.9);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+      }
+      .reveal-element { filter: none !important; transform: translateY(32px); }
+      .is-visible .reveal-element { transform: none; filter: none; }
+      .shine-title { animation-duration: 9.5s; }
+      .slide { filter: none; }
+      .slide.active, .slide.leaving { filter: none; }
+      .marquee-track { will-change: auto; }
+    }
+
+    /* ─── MOBILE RESPONSIVENESS ────────────────────── */
+    @media (max-width: 900px) {
+      header { padding: 0 24px; height: 76px; }
+      .header-btn span { display: none; }
+      .header-btn { width: 42px; height: 42px; padding: 0; border-radius: 12px; }
+
+      .hero { padding: 20px 24px 80px; }
+      .hero-inner { flex-direction: column; gap: 30px; }
+
+      /* ULTRA-MINIMAL mobile phone mockup */
+      .hero-phone-stage { order: 1; height: 380px; width: 100%; align-items: center; }
+      .phone-frame { width: 175px; height: 360px; border-radius: 28px; padding: 6px; }
+      .phone-glow { width: 175px; height: 360px; }
+      .phone-screen { border-radius: 22px; }
+      .phone-notch { width: 70px; height: 18px; top: 7px; border-radius: 12px; }
+
+      /* Generous Mobile slider spacing */
+      .hero-slider-wrap { order: 2; width: 100%; align-items: center; text-align: center; margin-top: 40px; }
+      .slides-container { min-height: 140px; }
+      .slide { align-items: center; text-align: center; }
+      .slide-title { margin-bottom: 16px; }
+      .slide-desc { font-size: 13.5px; }
+      .btn-uiverse { margin: 30px auto; }
+
+      .aww-section { padding: 60px 24px; min-height: auto; }
+      .feature-container, .aww-section:nth-child(even) .feature-container { flex-direction: column; text-align: center; gap: 30px; }
+      .slide-text, .aww-section:nth-child(even) .slide-text { align-items: center; }
+      .slide-icon-wrap { width: 200px; height: 200px; }
+
+      .stats-section { padding: 60px 24px 20px; }
+      .stats-inner.glass-panel { padding: 28px 16px 22px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+      .stat-card { padding: 28px 14px; }
+      .stat-number { font-size: 26px; }
+      .stat-suffix { font-size: 18px; }
+
+      .testimonials-section { padding: 70px 0 30px; }
+      .testimonials-head.glass-panel { margin: 0 24px 40px; padding: 22px 18px 24px; }
+      .t-card { width: 300px; padding: 20px; }
+
+      .cta-section { padding: 50px 24px 90px; }
+      .cta-inner { padding: 50px 24px; }
+
+      .modern-footer { padding: 0 24px 40px; }
+      .footer-inner { grid-template-columns: 1fr; gap: 50px; text-align: center; margin-top: 50px; }
+      .footer-brand .logo-img, .footer-desc { margin-left: auto; margin-right: auto; }
+      .footer-title::after { right: 50%; transform: translateX(50%); }
+      .trust-badges-container { justify-content: center; }
+      .social-row { justify-content: center; }
+      .footer-contact-item { justify-content: center; }
+      .footer-bottom { flex-direction: column; align-items: center; gap: 22px; text-align: center; margin-top: 50px; }
+      .footer-credit { align-items: center; }
+
+      .back-to-top { bottom: 20px; left: 20px; width: 42px; height: 42px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="ambient-veil"></div>
+
+<div id="smooth-wrapper">
+  <div id="smooth-content">
+
+    <!-- Science symbols: inline SVG, parallax + rotate with native scroll -->
+    <div class="depth-world" id="depth-world"></div>
+
+    <header>
+      <a href="#" class="logo" aria-label="Metatest Home">
+        <img src="https://metatest.app/logo.png" class="logo-img" alt="Metatest Logo">
+      </a>
+      <div class="header-actions">
+        <a href="#" class="header-btn" aria-label="دانلود اپلیکیشن">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>دانلود اپلیکیشن</span>
+        </a>
+        <a href="#" class="header-btn" aria-label="ورود / ثبت‌نام">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>ورود / ثبت‌نام</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-slider-wrap">
+          <div class="slides-container">
+            <div class="slide active" data-index="0">
+              <h1 class="slide-title shine-title">یادگیری هوشمند<br>در محیطی زنده</h1>
+              <p class="slide-desc">پلتفرم جامع ارزیابی، آزمون و تحلیل عملکرد. ابزاری مدرن برای پیشرفت بدون محدودیت در فضایی استاندارد.</p>
+            </div>
+            <div class="slide" data-index="1">
+              <h1 class="slide-title shine-title">شیمی، فیزیک، ریاضی<br>و زیست را تمرین کنید</h1>
+              <p class="slide-desc">با دقت بالا پایه، درس، فصل و مبحث دلخواهتان را انتخاب کنید و به صورت اختصاصی تست بزنید.</p>
+            </div>
+            <div class="slide" data-index="2">
+              <h1 class="slide-title shine-title">هوش مصنوعی<br>همراه همیشگی شماست</h1>
+              <p class="slide-desc">چت کنید، سوال بپرسید و حل مشکلات درسی خود را به معلم خصوصی هوشمند متاتست بسپارید.</p>
+            </div>
+          </div>
+
+          <a href="https://metatest.app/app/" class="btn-uiverse">
+            <span></span>
+            <p data-title="شروع کنید" data-text="همین حالا!"></p>
+          </a>
+
+          <div class="slider-dots">
+            <button class="dot active" data-index="0" aria-label="اسلاید ۱"></button>
+            <button class="dot" data-index="1" aria-label="اسلاید ۲"></button>
+            <button class="dot" data-index="2" aria-label="اسلاید ۳"></button>
+          </div>
+        </div>
+
+        <div class="hero-phone-stage">
+          <div class="phone-glow"></div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-screen-placeholder">
+                <img src="https://metatest.app/logo.png" class="mini-logo" alt="">
+                <p>پیش‌نمایش اپلیکیشن<br>متاتست</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CINEMATIC FEATURES -->
+    <section class="aww-section">
+      <div class="feature-container">
+        <div class="slide-icon-wrap reveal-element stagger-1">
+          <lord-icon src="doodle-motif-10-puzzle-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
+        </div>
+        <div class="slide-text">
+          <h2 class="sec-title shine-title reveal-element stagger-2">آموزش شبیه به بازی</h2>
+          <p class="sec-desc reveal-element stagger-3">محیطی شبیه به بازی برای تمرین دروس شیمی، فیزیک، ریاضی و زیست. با دقت بالا پایه، درس، فصل و مبحث دلخواهتان را برای تمرین انتخاب کنید و لذت ببرید.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="aww-section">
+      <div class="feature-container">
+        <div class="slide-icon-wrap reveal-element stagger-1">
+          <lord-icon src="doodle-motif-316-growth-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
+        </div>
+        <div class="slide-text">
+          <h2 class="sec-title shine-title reveal-element stagger-2">تحلیل دقیق عملکرد</h2>
+          <p class="sec-desc reveal-element stagger-3">نمودارهای زنده و بازخوردهای لحظه‌ای، داده‌های مفیدی از نحوه مطالعه و تمرین به شما ارائه می‌دهند تا نقاط قوت و ضعف خود را به شفاف‌ترین شکل ممکن بشناسید.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="aww-section">
+      <div class="feature-container">
+        <div class="slide-icon-wrap reveal-element stagger-1">
+          <lord-icon src="doodle-motif-709-cloud-user-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
+        </div>
+        <div class="slide-text">
+          <h2 class="sec-title shine-title reveal-element stagger-2">هوش مصنوعی همراه</h2>
+          <p class="sec-desc reveal-element stagger-3">یک هوش مصنوعی شخصی‌سازی شده که مانند یک معلم واقعی احساسات و تخصص دارد. چت کنید، سوال بپرسید و حل پیچیده‌ترین مشکلات درسی خود را به او بسپارید.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS — METATEST AT A GLANCE -->
+    <section class="stats-section reveal-section">
+      <div class="stats-inner glass-panel">
+        <div class="stats-head">
+          <div class="sec-eyebrow reveal-element stagger-1">متاتست در یک نگاه</div>
+          <h2 class="sec-title shine-title reveal-element stagger-2">اعدادی که خودشان حرف می‌زنند</h2>
+          <p class="sec-desc reveal-element stagger-3">هر روز هزاران دانش‌آموز با متاتست تمرین می‌کنند، رقابت می‌کنند و پیشرفتشان را با چشم خودشان می‌بینند.</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card reveal-element stagger-1">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div class="stat-number"><span class="stat-suffix">+</span><span class="stat-value" data-target="120000">۰</span></div>
+            <div class="stat-label">تست حل‌شده</div>
+          </div>
+          <div class="stat-card reveal-element stagger-2">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="stat-number"><span class="stat-suffix">+</span><span class="stat-value" data-target="8500">۰</span></div>
+            <div class="stat-label">دانش‌آموز فعال</div>
+          </div>
+          <div class="stat-card reveal-element stagger-3">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div class="stat-number"><span class="stat-suffix">+</span><span class="stat-value" data-target="250000">۰</span></div>
+            <div class="stat-label">پاسخ هوش مصنوعی</div>
+          </div>
+          <div class="stat-card reveal-element stagger-4">
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>
+            </div>
+            <div class="stat-number"><span class="stat-suffix">٪</span><span class="stat-value" data-target="98">۰</span></div>
+            <div class="stat-label">رضایت کاربران</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDENT TESTIMONIALS -->
+    <section class="testimonials-section reveal-section">
+      <div class="testimonials-head glass-panel">
+        <div class="sec-eyebrow reveal-element stagger-1">نظرات دانش‌آموزان</div>
+        <h2 class="sec-title shine-title reveal-element stagger-2">دانش‌آموزان چه می‌گویند؟</h2>
+        <p class="sec-desc reveal-element stagger-3">تجربه واقعی کسانی که هر روز با متاتست درس می‌خوانند، تمرین می‌کنند و پیشرفت می‌کنند.</p>
+      </div>
+
+      <div class="reveal-element stagger-2">
+        <div class="marquee-row">
+          <div class="marquee-track">
+            <div class="marquee-group">
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-1">ع</div>
+                  <div class="t-meta"><div class="t-name">علی رضایی</div><div class="t-grade">پایه دوازدهم — تجربی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">تحلیل‌های متاتست دقیقاً بهم نشون داد کجای زیست ضعف دارم. بعد از یک ماه تمرین هدفمند، درصدم توی آزمون‌های آزمایشی ۲۰ درصد بالا رفت!</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-2">س</div>
+                  <div class="t-meta"><div class="t-name">سارا محمدی</div><div class="t-grade">پایه یازدهم — ریاضی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg class="off" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">محیطش انقدر شبیه بازیه که اصلاً حس درس خوندن ندارم! هر شب با دوستام مسابقه می‌ذاریم و بدون اینکه بفهمیم کلی تست حل می‌کنیم.</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-3">ا</div>
+                  <div class="t-meta"><div class="t-name">امیرحسین کریمی</div><div class="t-grade">کنکوری — تجربی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">معلم هوش مصنوعی متاتست ساعت ۲ نصفه‌شب هم جواب سوالای فیزیکمو می‌ده! دیگه لازم نیست تا کلاس بعدی صبر کنم تا اشکالمو بپرسم.</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-4">ن</div>
+                  <div class="t-meta"><div class="t-name">نگین احمدی</div><div class="t-grade">پایه دهم — تجربی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">اینکه می‌تونم دقیقاً فصل و مبحثی که می‌خوام رو انتخاب کنم عالیه. شیمی رو فصل به فصل با متاتست جلو رفتم و الان از کلاسم جلوترم.</p>
+              </div>
+            </div>
+            <div class="marquee-group" aria-hidden="true">
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-1">ع</div>
+                  <div class="t-meta"><div class="t-name">علی رضایی</div><div class="t-grade">پایه دوازدهم — تجربی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">تحلیل‌های متاتست دقیقاً بهم نشون داد کجای زیست ضعف دارم. بعد از یک ماه تمرین هدفمند، درصدم توی آزمون‌های آزمایشی ۲۰ درصد بالا رفت!</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-2">س</div>
+                  <div class="t-meta"><div class="t-name">سارا محمدی</div><div class="t-grade">پایه یازدهم — ریاضی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg class="off" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">محیطش انقدر شبیه بازیه که اصلاً حس درس خوندن ندارم! هر شب با دوستام مسابقه می‌ذاریم و بدون اینکه بفهمیم کلی تست حل می‌کنیم.</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-3">ا</div>
+                  <div class="t-meta"><div class="t-name">امیرحسین کریمی</div><div class="t-grade">کنکوری — تجربی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">معلم هوش مصنوعی متاتست ساعت ۲ نصفه‌شب هم جواب سوالای فیزیکمو می‌ده! دیگه لازم نیست تا کلاس بعدی صبر کنم تا اشکالمو بپرسم.</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-4">ن</div>
+                  <div class="t-meta"><div class="t-name">نگین احمدی</div><div class="t-grade">پایه دهم — تجربی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">اینکه می‌تونم دقیقاً فصل و مبحثی که می‌خوام رو انتخاب کنم عالیه. شیمی رو فصل به فصل با متاتست جلو رفتم و الان از کلاسم جلوترم.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="marquee-row reverse">
+          <div class="marquee-track">
+            <div class="marquee-group">
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-2">م</div>
+                  <div class="t-meta"><div class="t-name">محمد قاسمی</div><div class="t-grade">پایه دوازدهم — ریاضی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">نمودارهای پیشرفتش واقعاً انگیزه‌بخشه. هر هفته می‌بینم چقدر بهتر شدم و همین باعث می‌شه ادامه بدم. حسابان رو کاملاً با متاتست جمع کردم.</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-3">ف</div>
+                  <div class="t-meta"><div class="t-name">فاطمه حسینی</div><div class="t-grade">پایه یازدهم — تجربی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">قبلاً از فیزیک فرار می‌کردم ولی الان هر روز خودم می‌رم سراغش! وقتی جواب اشتباه می‌دم هوش مصنوعی قدم به قدم توضیح می‌ده کجا اشتباه کردم.</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-4">پ</div>
+                  <div class="t-meta"><div class="t-name">پارسا نوری</div><div class="t-grade">پایه دهم — ریاضی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg class="off" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">آزمون‌های رقابتیش فوق‌العادست. با بچه‌های کل کشور مسابقه می‌دم و رتبه‌م رو لحظه‌ای می‌بینم. حس المپیاد رو توی خونه دارم!</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-1">ی</div>
+                  <div class="t-meta"><div class="t-name">یاسمن عزیزی</div><div class="t-grade">کنکوری — هنر</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">رابط کاربریش از هر اپ خارجی که دیدم قشنگ‌تره. همه‌چیز روون و سریعه و برنامه مطالعه‌م رو کاملاً بر اساس تحلیل‌های متاتست چیدم.</p>
+              </div>
+            </div>
+            <div class="marquee-group" aria-hidden="true">
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-2">م</div>
+                  <div class="t-meta"><div class="t-name">محمد قاسمی</div><div class="t-grade">پایه دوازدهم — ریاضی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">نمودارهای پیشرفتش واقعاً انگیزه‌بخشه. هر هفته می‌بینم چقدر بهتر شدم و همین باعث می‌شه ادامه بدم. حسابان رو کاملاً با متاتست جمع کردم.</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-3">ف</div>
+                  <div class="t-meta"><div class="t-name">فاطمه حسینی</div><div class="t-grade">پایه یازدهم — تجربی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">قبلاً از فیزیک فرار می‌کردم ولی الان هر روز خودم می‌رم سراغش! وقتی جواب اشتباه می‌دم هوش مصنوعی قدم به قدم توضیح می‌ده کجا اشتباه کردم.</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-4">پ</div>
+                  <div class="t-meta"><div class="t-name">پارسا نوری</div><div class="t-grade">پایه دهم — ریاضی</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg class="off" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">آزمون‌های رقابتیش فوق‌العادست. با بچه‌های کل کشور مسابقه می‌دم و رتبه‌م رو لحظه‌ای می‌بینم. حس المپیاد رو توی خونه دارم!</p>
+              </div>
+              <div class="t-card">
+                <div class="t-head">
+                  <div class="t-avatar av-1">ی</div>
+                  <div class="t-meta"><div class="t-name">یاسمن عزیزی</div><div class="t-grade">کنکوری — هنر</div></div>
+                  <div class="t-stars">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>
+                  </div>
+                </div>
+                <p class="t-text">رابط کاربریش از هر اپ خارجی که دیدم قشنگ‌تره. همه‌چیز روون و سریعه و برنامه مطالعه‌م رو کاملاً بر اساس تحلیل‌های متاتست چیدم.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="cta-section reveal-section">
+      <div class="cta-card reveal-element stagger-1">
+        <div class="cta-inner">
+          <div class="sec-eyebrow">آینده‌ات از همین‌جا شروع می‌شود</div>
+          <h2 class="cta-title shine-title">آماده‌ای مرزهای پیشرفتت را<br>جابه‌جا کنی؟</h2>
+          <p class="cta-desc">همین حالا به هزاران دانش‌آموز بپیوند که هر روز با متاتست تمرین می‌کنند، رقابت می‌کنند و از معلم خصوصی هوش مصنوعی کمک می‌گیرند. شروع رایگان است.</p>
+          <a href="https://metatest.app/app/" class="btn-uiverse">
+            <span></span>
+            <p data-title="ساخت حساب رایگان" data-text="بزن بریم!"></p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="modern-footer">
+      <div class="footer-aurora"></div>
+      <div class="footer-glow-line"></div>
+
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="https://metatest.app/logo.png" class="logo-img" alt="Metatest Logo">
+          <p class="footer-desc">متاتست نسل جدید یادگیری و ارزیابی است. محیطی سریع، هوشمند و زیبا که به شما اجازه می‌دهد مرزهای پیشرفت خود را جا به جا کنید.</p>
+
+          <!-- Modern Glass Trust Badges -->
+          <div class="trust-badges-container">
+            <div class="trust-card" aria-label="ای نماد">
+              <img src="https://metatest.app/enamad.svg" class="enamad" alt="ای‌نماد" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <span class="trust-fallback" style="display:none;">ای‌نماد</span>
+            </div>
+            <div class="trust-card" aria-label="ستاد ساماندهی">
+              <img src="https://metatest.app/samandehi.png" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+              <span class="trust-fallback" style="display:none;">ساماندهی</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-title">لینک‌های سریع</h4>
+          <ul class="footer-links">
+            <li><a href="#">درباره متاتست</a></li>
+            <li><a href="#">پلن‌ها و تعرفه‌ها</a></li>
+            <li><a href="#">سوالات متداول</a></li>
+            <li><a href="#">بلاگ آموزشی</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">دسترسی</h4>
+          <ul class="footer-links">
+            <li><a href="#">دانلود اپلیکیشن</a></li>
+            <li><a href="#">راهنمای شروع</a></li>
+            <li><a href="#">قوانین و حریم خصوصی</a></li>
+            <li><a href="#">پشتیبانی</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-title">ارتباط با ما</h4>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span dir="ltr">09120578911</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span dir="ltr">metatestinfo@gmail.com</span>
+          </div>
+          <div class="footer-contact-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>مشهد، بلوار سجاد، امین غربی ۴، پلاک ۶، ساختمان A10</span>
+          </div>
+
+          <div class="social-row">
+            <a href="#" class="social-btn" aria-label="اینستاگرام">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </a>
+            <a href="#" class="social-btn" aria-label="تلگرام">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </a>
+            <a href="#" class="social-btn" aria-label="یوتیوب">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+            </a>
+            <a href="#" class="social-btn" aria-label="لینکدین">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>تمامی حقوق برای متاتست محفوظ است © ۲۰۲۶</div>
+        <div class="footer-credit">
+          <span class="created-by-label">Created by</span>
+          <img src="team-logo.svg" class="team-logo" alt="Programming team">
+        </div>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<!-- Back to top -->
+<button class="back-to-top" id="back-to-top" aria-label="بازگشت به بالا">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<script>
+  /* ═══════════════════════════════════════════════════
+     SCIENCE SYMBOLS — inline SVG codes (not image files)
+     Move + rotate 1:1 with native scrollY every frame.
+  ═══════════════════════════════════════════════════ */
+  const SVG_LIB = {
+    atom: `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="50" rx="42" ry="16" stroke="#E9D5FF" stroke-width="2.6"/><ellipse cx="50" cy="50" rx="42" ry="16" transform="rotate(60 50 50)" stroke="#F5F3FF" stroke-width="2.6"/><ellipse cx="50" cy="50" rx="42" ry="16" transform="rotate(-60 50 50)" stroke="#C4B5FD" stroke-width="2.6"/><circle cx="50" cy="50" r="9" fill="#A78BFA" opacity="0.95"/><circle cx="50" cy="50" r="14" stroke="#FFFFFF" stroke-width="1.2" opacity="0.55"/><circle cx="92" cy="50" r="4.2" fill="#FFFFFF"/><circle cx="29" cy="16" r="4.2" fill="#FFFFFF"/><circle cx="71" cy="84" r="4.2" fill="#E9D5FF"/></svg>`,
+
+    benzene: `<svg viewBox="0 0 100 100" fill="none"><polygon points="50,10 84,30 84,70 50,90 16,70 16,30" fill="#8B5CF6" fill-opacity="0.16" stroke="#E9D5FF" stroke-width="2.6" stroke-linejoin="round"/><polygon points="50,28 70,40 70,60 50,72 30,60 30,40" stroke="#F5F3FF" stroke-width="2" stroke-linejoin="round"/><circle cx="50" cy="50" r="10" stroke="#FFFFFF" stroke-width="1.8"/><circle cx="50" cy="10" r="3.4" fill="#FFFFFF"/><circle cx="84" cy="70" r="3.4" fill="#FFFFFF"/><circle cx="16" cy="70" r="3.4" fill="#E9D5FF"/></svg>`,
+
+    flask: `<svg viewBox="0 0 100 100" fill="none"><path d="M38 10 H62 M44 10 V36 L24 74 A12 12 0 0 0 34 90 H66 A12 12 0 0 0 76 74 L56 36 V10" stroke="#E9D5FF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 62 C38 56 46 70 54 62 C62 54 70 66 74 62 L70 76 A12 12 0 0 1 34 90 H34 A12 12 0 0 1 26 74 Z" fill="#A78BFA" fill-opacity="0.35"/><circle cx="42" cy="72" r="3.2" fill="#FFFFFF"/><circle cx="56" cy="80" r="2.4" fill="#FFFFFF"/><circle cx="50" cy="68" r="1.8" fill="#EDE9FE"/></svg>`,
+
+    beaker: `<svg viewBox="0 0 100 100" fill="none"><path d="M32 12 V76 A10 10 0 0 0 42 88 H62 A10 10 0 0 0 72 76 V12" stroke="#E9D5FF" stroke-width="2.6" stroke-linecap="round"/><path d="M32 12 H76" stroke="#E9D5FF" stroke-width="2.6" stroke-linecap="round"/><path d="M32 50 C40 44 48 56 56 50 C64 44 70 54 72 50 V76 A10 10 0 0 1 62 88 H42 A10 10 0 0 1 32 76 Z" fill="#A78BFA" fill-opacity="0.32"/><path d="M60 24 H70 M60 36 H70 M60 62 H70 M60 74 H70" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><circle cx="46" cy="66" r="2.8" fill="#FFFFFF"/></svg>`,
+
+    testTube: `<svg viewBox="0 0 100 100" fill="none"><g transform="rotate(22 50 50)"><rect x="40" y="8" width="20" height="8" rx="2" stroke="#E9D5FF" stroke-width="2.4"/><path d="M42 16 V70 A8 8 0 0 0 58 70 V16" stroke="#E9D5FF" stroke-width="2.6" stroke-linecap="round"/><path d="M42 46 V70 A8 8 0 0 0 58 70 V46 Z" fill="#A78BFA" fill-opacity="0.4"/><circle cx="50" cy="56" r="2.6" fill="#FFFFFF"/><circle cx="46" cy="64" r="1.8" fill="#EDE9FE"/></g></svg>`,
+
+    molecule: `<svg viewBox="0 0 100 100" fill="none"><line x1="50" y1="38" x2="26" y2="68" stroke="#FFFFFF" stroke-width="3"/><line x1="50" y1="38" x2="76" y2="68" stroke="#FFFFFF" stroke-width="3"/><circle cx="50" cy="34" r="16" fill="#8B5CF6" fill-opacity="0.35" stroke="#E9D5FF" stroke-width="2.6"/><circle cx="24" cy="70" r="11" fill="#A78BFA" fill-opacity="0.4" stroke="#F5F3FF" stroke-width="2.4"/><circle cx="76" cy="70" r="11" fill="#A78BFA" fill-opacity="0.4" stroke="#F5F3FF" stroke-width="2.4"/><circle cx="50" cy="34" r="5" fill="#FFFFFF"/><circle cx="24" cy="70" r="3.2" fill="#FFFFFF"/><circle cx="76" cy="70" r="3.2" fill="#FFFFFF"/></svg>`,
+
+    helix: `<svg viewBox="0 0 100 100" fill="none"><path d="M32 8 C 70 22 70 38 32 50 C 70 62 70 78 32 92" stroke="#E9D5FF" stroke-width="3" stroke-linecap="round"/><path d="M68 8 C 30 22 30 38 68 50 C 30 62 30 78 68 92" stroke="#C4B5FD" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="20" x2="60" y2="20" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><line x1="36" y1="28" x2="64" y2="28" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><line x1="40" y1="36" x2="60" y2="36" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><line x1="40" y1="64" x2="60" y2="64" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><line x1="36" y1="72" x2="64" y2="72" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><line x1="40" y1="80" x2="60" y2="80" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><circle cx="32" cy="8" r="3.2" fill="#FFFFFF"/><circle cx="68" cy="92" r="3.2" fill="#FFFFFF"/></svg>`,
+
+    chromosome: `<svg viewBox="0 0 100 100" fill="none"><path d="M30 10 C 50 28 50 40 50 50 C 50 60 50 72 30 90" stroke="#E9D5FF" stroke-width="5.5" stroke-linecap="round"/><path d="M70 10 C 50 28 50 40 50 50 C 50 60 50 72 70 90" stroke="#C4B5FD" stroke-width="5.5" stroke-linecap="round"/><circle cx="50" cy="50" r="6" fill="#FFFFFF"/><line x1="36" y1="24" x2="48" y2="18" stroke="#FFFFFF" stroke-width="2"/><line x1="52" y1="18" x2="64" y2="24" stroke="#FFFFFF" stroke-width="2"/></svg>`,
+
+    brain: `<svg viewBox="0 0 100 100" fill="none"><path d="M48 16 C 34 10 20 20 22 32 C 12 34 10 48 18 54 C 10 62 16 76 28 78 C 28 88 40 92 48 84 V16 Z" fill="#8B5CF6" fill-opacity="0.22" stroke="#E9D5FF" stroke-width="2.4" stroke-linejoin="round"/><path d="M52 16 C 66 10 80 20 78 32 C 88 34 90 48 82 54 C 90 62 84 76 72 78 C 72 88 60 92 52 84 V16 Z" fill="#A78BFA" fill-opacity="0.22" stroke="#F5F3FF" stroke-width="2.4" stroke-linejoin="round"/><path d="M48 34 C 38 36 36 46 44 50 M52 42 C 62 44 64 54 56 58 M48 62 C 38 64 36 74 44 76" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+
+    microscope: `<svg viewBox="0 0 100 100" fill="none"><path d="M44 8 L60 4 L74 42 L58 46 Z" fill="#8B5CF6" fill-opacity="0.28" stroke="#E9D5FF" stroke-width="2.4" stroke-linejoin="round"/><circle cx="68" cy="58" r="6" fill="#C4B5FD"/><path d="M28 30 C 12 48 14 68 34 76" stroke="#F5F3FF" stroke-width="3" stroke-linecap="round"/><line x1="36" y1="66" x2="86" y2="66" stroke="#E9D5FF" stroke-width="2.8" stroke-linecap="round"/><path d="M24 88 H78 A8 8 0 0 0 70 78 H32 A8 8 0 0 0 24 88 Z" fill="#A78BFA" fill-opacity="0.25" stroke="#E9D5FF" stroke-width="2.4"/></svg>`,
+
+    cell: `<svg viewBox="0 0 100 100" fill="none"><path d="M50 12 C 76 12 90 30 88 50 C 90 74 70 88 50 88 C 26 88 10 70 12 48 C 12 26 30 12 50 12 Z" fill="#8B5CF6" fill-opacity="0.14" stroke="#E9D5FF" stroke-width="2.6"/><circle cx="44" cy="46" r="14" fill="#A78BFA" fill-opacity="0.35" stroke="#F5F3FF" stroke-width="2.2"/><circle cx="48" cy="42" r="5" fill="#FFFFFF"/><ellipse cx="68" cy="64" rx="9" ry="5" transform="rotate(-24 68 64)" stroke="#FFFFFF" stroke-width="1.8"/><circle cx="66" cy="32" r="3" fill="#FFFFFF"/><circle cx="30" cy="66" r="2.4" fill="#EDE9FE"/></svg>`,
+
+    leaf: `<svg viewBox="0 0 100 100" fill="none"><path d="M50 6 C 80 26 86 58 50 94 C 14 58 20 26 50 6 Z" fill="#8B5CF6" fill-opacity="0.18" stroke="#E9D5FF" stroke-width="2.6" stroke-linejoin="round"/><path d="M50 14 V90" stroke="#FFFFFF" stroke-width="2"/><path d="M50 28 C 40 32 32 40 28 48 M50 28 C 60 32 68 40 72 48 M50 50 C 41 54 34 62 32 70 M50 50 C 59 54 66 62 68 70" stroke="#F5F3FF" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+
+    pendulum: `<svg viewBox="0 0 100 100" fill="none"><line x1="26" y1="12" x2="74" y2="12" stroke="#E9D5FF" stroke-width="3.2" stroke-linecap="round"/><line x1="50" y1="12" x2="68" y2="62" stroke="#E9D5FF" stroke-width="2.6"/><circle cx="70" cy="74" r="12" fill="#A78BFA" fill-opacity="0.45" stroke="#F5F3FF" stroke-width="2.6"/><circle cx="70" cy="74" r="4" fill="#FFFFFF"/><line x1="50" y1="12" x2="32" y2="62" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 4"/><circle cx="30" cy="74" r="12" stroke="#FFFFFF" stroke-width="1.6" stroke-dasharray="4 3"/></svg>`,
+
+    magnet: `<svg viewBox="0 0 100 100" fill="none"><path d="M24 64 V30 A26 26 0 0 1 76 30 V64 H60 V34 A10 10 0 0 0 40 34 V64 Z" fill="#8B5CF6" fill-opacity="0.16" stroke="#E9D5FF" stroke-width="2.6" stroke-linejoin="round"/><path d="M24 50 H40 M60 50 H76" stroke="#FFFFFF" stroke-width="2.4"/><rect x="24" y="50" width="16" height="14" fill="#C4B5FD" opacity="0.7"/><rect x="60" y="50" width="16" height="14" fill="#E9D5FF" opacity="0.7"/><path d="M32 72 C 32 88 68 88 68 72" stroke="#FFFFFF" stroke-width="1.8" stroke-dasharray="4 3"/></svg>`,
+
+    prism: `<svg viewBox="0 0 100 100" fill="none"><polygon points="50,12 88,82 12,82" fill="#8B5CF6" fill-opacity="0.2" stroke="#E9D5FF" stroke-width="2.6" stroke-linejoin="round"/><line x1="6" y1="38" x2="38" y2="50" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/><line x1="62" y1="50" x2="94" y2="36" stroke="#FFFFFF" stroke-width="2"/><line x1="62" y1="54" x2="94" y2="50" stroke="#C4B5FD" stroke-width="2"/><line x1="62" y1="58" x2="94" y2="64" stroke="#A78BFA" stroke-width="2"/></svg>`,
+
+    wave: `<svg viewBox="0 0 100 100" fill="none"><line x1="6" y1="50" x2="94" y2="50" stroke="#FFFFFF" stroke-width="1.4" stroke-dasharray="4 5"/><path d="M6 50 C 16 18 28 18 36 50 C 44 82 56 82 64 50 C 72 18 84 18 94 50" stroke="#E9D5FF" stroke-width="3" stroke-linecap="round"/><circle cx="22" cy="26" r="3.2" fill="#FFFFFF"/><circle cx="50" cy="74" r="3.2" fill="#FFFFFF"/><circle cx="78" cy="26" r="3.2" fill="#C4B5FD"/></svg>`,
+
+    gravity: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="14" fill="#A78BFA" fill-opacity="0.4" stroke="#E9D5FF" stroke-width="2.6"/><ellipse cx="50" cy="50" rx="40" ry="18" transform="rotate(-20 50 50)" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="5 4"/><circle cx="86" cy="34" r="6.5" fill="#C4B5FD" stroke="#F5F3FF" stroke-width="2"/><path d="M50 28 V20 M50 72 V80 M28 50 H20 M72 50 H80" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+
+    planet: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="24" fill="#8B5CF6" fill-opacity="0.28" stroke="#E9D5FF" stroke-width="2.6"/><ellipse cx="50" cy="50" rx="44" ry="12" transform="rotate(-18 50 50)" stroke="#F5F3FF" stroke-width="2.8"/><path d="M34 42 H64 M36 56 H68" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/><circle cx="18" cy="20" r="2.6" fill="#FFFFFF"/><circle cx="84" cy="78" r="2" fill="#EDE9FE"/></svg>`,
+
+    rocket: `<svg viewBox="0 0 100 100" fill="none"><path d="M50 6 C 64 20 68 40 64 60 H36 C 32 40 36 20 50 6 Z" fill="#8B5CF6" fill-opacity="0.28" stroke="#E9D5FF" stroke-width="2.6" stroke-linejoin="round"/><circle cx="50" cy="32" r="8" fill="#C4B5FD" stroke="#FFFFFF" stroke-width="2"/><path d="M36 46 L22 68 L36 60 Z M64 46 L78 68 L64 60 Z" fill="#A78BFA" stroke="#F5F3FF" stroke-width="2" stroke-linejoin="round"/><path d="M44 62 C 44 74 56 74 56 62" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/><line x1="50" y1="74" x2="50" y2="90" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="4 3"/></svg>`,
+
+    lightning: `<svg viewBox="0 0 100 100" fill="none"><path d="M58 6 L26 52 H46 L38 94 L76 38 H54 Z" fill="#C4B5FD" fill-opacity="0.55" stroke="#E9D5FF" stroke-width="2.6" stroke-linejoin="round"/><circle cx="22" cy="22" r="2.4" fill="#FFFFFF"/><circle cx="82" cy="72" r="2.4" fill="#FFFFFF"/></svg>`,
+
+    telescope: `<svg viewBox="0 0 100 100" fill="none"><path d="M12 38 L66 12 L76 34 L22 60 Z" fill="#8B5CF6" fill-opacity="0.28" stroke="#E9D5FF" stroke-width="2.6" stroke-linejoin="round"/><line x1="46" y1="46" x2="32" y2="90" stroke="#F5F3FF" stroke-width="2.6" stroke-linecap="round"/><line x1="46" y1="46" x2="62" y2="90" stroke="#F5F3FF" stroke-width="2.6" stroke-linecap="round"/><circle cx="86" cy="16" r="3" fill="#FFFFFF"/><circle cx="92" cy="50" r="2" fill="#EDE9FE"/></svg>`,
+
+    math: `<svg viewBox="0 0 100 100" fill="none"><line x1="14" y1="86" x2="14" y2="10" stroke="#FFFFFF" stroke-width="2"/><line x1="14" y1="86" x2="90" y2="86" stroke="#FFFFFF" stroke-width="2"/><path d="M14 12 L8 20 M14 12 L20 20 M90 86 L82 80 M90 86 L82 92" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><path d="M14 78 C 36 78 36 44 52 44 C 68 44 68 18 88 16" stroke="#E9D5FF" stroke-width="3" stroke-linecap="round"/><circle cx="52" cy="44" r="4" fill="#FFFFFF"/><circle cx="88" cy="16" r="4" fill="#C4B5FD"/></svg>`,
+
+    pi: `<svg viewBox="0 0 100 100" fill="none"><path d="M16 28 C 24 16 36 16 88 20" stroke="#E9D5FF" stroke-width="4.2" stroke-linecap="round"/><path d="M36 22 C 36 46 32 66 22 84" stroke="#E9D5FF" stroke-width="4.2" stroke-linecap="round"/><path d="M64 22 C 64 46 64 62 72 78 C 76 86 84 86 86 78" stroke="#C4B5FD" stroke-width="4.2" stroke-linecap="round"/></svg>`,
+
+    sigma: `<svg viewBox="0 0 100 100" fill="none"><path d="M78 26 V14 H22 L50 50 L22 86 H78 V74" fill="#8B5CF6" fill-opacity="0.12" stroke="#E9D5FF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+
+    integral: `<svg viewBox="0 0 100 100" fill="none"><path d="M64 10 C 56 2 44 8 44 22 V78 C 44 92 32 98 24 90" stroke="#E9D5FF" stroke-width="3.4" stroke-linecap="round"/><circle cx="64" cy="18" r="3.4" fill="#FFFFFF"/><circle cx="24" cy="82" r="3.4" fill="#FFFFFF"/></svg>`,
+
+    infinity: `<svg viewBox="0 0 100 100" fill="none"><path d="M50 50 C 36 26 10 30 10 50 C 10 70 36 74 50 50 C 64 26 90 30 90 50 C 90 70 64 74 50 50 Z" fill="#8B5CF6" fill-opacity="0.14" stroke="#E9D5FF" stroke-width="3.2" stroke-linejoin="round"/><circle cx="24" cy="50" r="3.4" fill="#FFFFFF"/><circle cx="76" cy="50" r="3.4" fill="#FFFFFF"/></svg>`,
+
+    function: `<svg viewBox="0 0 100 100" fill="none"><line x1="10" y1="84" x2="90" y2="84" stroke="#FFFFFF" stroke-width="1.8"/><line x1="50" y1="90" x2="50" y2="10" stroke="#FFFFFF" stroke-width="1.8" stroke-dasharray="4 4"/><path d="M16 22 C 32 84 68 84 84 22" stroke="#E9D5FF" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="68" r="4" fill="#FFFFFF"/></svg>`,
+
+    root: `<svg viewBox="0 0 100 100" fill="none"><path d="M10 56 L22 50 L36 84 L54 12 H92" stroke="#E9D5FF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M64 36 L80 58 M80 36 L64 58" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round"/></svg>`,
+
+    compass: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="14" r="6" fill="#C4B5FD" stroke="#E9D5FF" stroke-width="2.2"/><line x1="50" y1="20" x2="50" y2="30" stroke="#E9D5FF" stroke-width="2.8"/><line x1="50" y1="30" x2="28" y2="86" stroke="#E9D5FF" stroke-width="2.8" stroke-linecap="round"/><line x1="50" y1="30" x2="72" y2="86" stroke="#C4B5FD" stroke-width="2.8" stroke-linecap="round"/><path d="M22 88 A 48 48 0 0 0 78 88" stroke="#FFFFFF" stroke-width="1.8" stroke-dasharray="4 3"/><circle cx="50" cy="30" r="3.4" fill="#FFFFFF"/></svg>`,
+  };
+
+  const SYMBOLS = [
+    { svg: 'atom',       layer: 1, x: 2,  y: 5,  scale: 4.4, opacity: 0.16, factor: 0.5,  rotSpeed: 1.0,  phase: 0 },
+    { svg: 'molecule',   layer: 1, x: 86, y: 8,  scale: 3.8, opacity: 0.17, factor: 0.48, rotSpeed: -0.9, phase: 2 },
+    { svg: 'cell',       layer: 1, x: 80, y: 18, scale: 4.0, opacity: 0.15, factor: 0.42, rotSpeed: 0.7,  phase: 4 },
+    { svg: 'wave',       layer: 1, x: 6,  y: 16, scale: 3.6, opacity: 0.18, factor: 0.45, rotSpeed: -0.7, phase: 6 },
+    { svg: 'planet',     layer: 1, x: 4,  y: 54, scale: 4.0, opacity: 0.16, factor: 0.46, rotSpeed: 0.5,  phase: 8 },
+
+    { svg: 'helix',      layer: 2, x: 5,  y: 26, scale: 2.9, opacity: 0.2,  factor: 0.38, rotSpeed: -1.1, phase: 1 },
+    { svg: 'pi',         layer: 2, x: 90, y: 30, scale: 2.7, opacity: 0.2,  factor: 0.36, rotSpeed: 0.85, phase: 3 },
+    { svg: 'pendulum',   layer: 2, x: 12, y: 36, scale: 2.8, opacity: 0.2,  factor: 0.33, rotSpeed: -0.65, phase: 5 },
+    { svg: 'flask',      layer: 2, x: 84, y: 40, scale: 3.0, opacity: 0.22, factor: 0.34, rotSpeed: 1.15, phase: 7 },
+    { svg: 'sigma',      layer: 2, x: 3,  y: 46, scale: 2.6, opacity: 0.2,  factor: 0.3,  rotSpeed: 0.95, phase: 2 },
+    { svg: 'benzene',    layer: 2, x: 88, y: 50, scale: 2.8, opacity: 0.2,  factor: 0.32, rotSpeed: -0.8, phase: 9 },
+    { svg: 'telescope',  layer: 2, x: 10, y: 52, scale: 2.5, opacity: 0.2,  factor: 0.31, rotSpeed: 0.6,  phase: 6 },
+
+    { svg: 'brain',      layer: 3, x: 78, y: 56, scale: 2.3, opacity: 0.22, factor: 0.28, rotSpeed: 0.75, phase: 8 },
+    { svg: 'magnet',     layer: 3, x: 16, y: 60, scale: 2.1, opacity: 0.22, factor: 0.26, rotSpeed: -1.3, phase: 4 },
+    { svg: 'infinity',   layer: 3, x: 90, y: 62, scale: 2.2, opacity: 0.22, factor: 0.24, rotSpeed: 1.4,  phase: 1 },
+    { svg: 'microscope', layer: 3, x: 8,  y: 66, scale: 2.0, opacity: 0.23, factor: 0.22, rotSpeed: -0.55, phase: 6 },
+    { svg: 'prism',      layer: 3, x: 82, y: 70, scale: 1.9, opacity: 0.23, factor: 0.2,  rotSpeed: 1.05, phase: 3 },
+    { svg: 'testTube',   layer: 3, x: 20, y: 72, scale: 1.8, opacity: 0.24, factor: 0.19, rotSpeed: -1.15, phase: 9 },
+    { svg: 'chromosome', layer: 3, x: 86, y: 76, scale: 1.9, opacity: 0.22, factor: 0.21, rotSpeed: 0.9,  phase: 5 },
+    { svg: 'integral',   layer: 3, x: 6,  y: 78, scale: 1.8, opacity: 0.23, factor: 0.2,  rotSpeed: -0.7, phase: 2 },
+
+    { svg: 'math',       layer: 4, x: 86, y: 80, scale: 1.6, opacity: 0.26, factor: 0.16, rotSpeed: 1.8,  phase: 0 },
+    { svg: 'leaf',       layer: 4, x: 5,  y: 82, scale: 1.5, opacity: 0.26, factor: 0.15, rotSpeed: -1.6, phase: 5 },
+    { svg: 'gravity',    layer: 4, x: 24, y: 84, scale: 1.4, opacity: 0.26, factor: 0.13, rotSpeed: 0.7,  phase: 2 },
+    { svg: 'beaker',     layer: 4, x: 78, y: 87, scale: 1.35, opacity: 0.27, factor: 0.12, rotSpeed: -1.9, phase: 7 },
+    { svg: 'function',   layer: 4, x: 12, y: 88, scale: 1.3, opacity: 0.27, factor: 0.11, rotSpeed: 1.55, phase: 4 },
+    { svg: 'root',       layer: 4, x: 68, y: 90, scale: 1.2, opacity: 0.28, factor: 0.1,  rotSpeed: -0.85, phase: 1 },
+    { svg: 'rocket',     layer: 4, x: 40, y: 91, scale: 1.15, opacity: 0.26, factor: 0.1,  rotSpeed: 1.2,  phase: 6 },
+    { svg: 'compass',    layer: 4, x: 54, y: 93, scale: 1.1, opacity: 0.28, factor: 0.09, rotSpeed: -1.1, phase: 9 },
+    { svg: 'lightning',  layer: 4, x: 4,  y: 94, scale: 1.05, opacity: 0.28, factor: 0.08, rotSpeed: -1.4, phase: 3 }
+  ];
+
+  const world = document.getElementById('depth-world');
+  const backToTop = document.getElementById('back-to-top');
+  const symbolEls = [];
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent)
+          || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isMobile = window.innerWidth <= 900 || isIOS;
+  if (isIOS) document.documentElement.classList.add('is-ios');
+
+  SYMBOLS.forEach((raw) => {
+    const cfg = isMobile ? {
+      ...raw,
+      scale: Math.min(raw.scale * 0.7, 2.6),
+      opacity: Math.min(raw.opacity * 1.25, 0.36)
+    } : raw;
+    const el = document.createElement('div');
+    el.className = 'symbol';
+    const size = 80 * cfg.scale;
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    let x = cfg.x;
+    if (isMobile) {
+      const widthPct = (size / Math.max(window.innerWidth, 1)) * 100;
+      x = Math.min(Math.max(x, 1), Math.max(1, 97 - widthPct));
+    }
+    el.style.left = x + '%';
+    el.style.top = cfg.y + '%';
+    el.style.opacity = String(cfg.opacity);
+    el.style.zIndex = String(cfg.layer);
+    el.innerHTML = SVG_LIB[cfg.svg] || '';
+    world.appendChild(el);
+    symbolEls.push({ el, cfg });
+  });
+
+  const rotMul = isIOS ? 0.09 : 0.14;
+  const nSymbols = symbolEls.length;
+  let lastY = -1;
+  let live = false;
+  let idleFrames = 0;
+
+  function applySymbols(y) {
+    for (let i = 0; i < nSymbols; i++) {
+      const { el, cfg } = symbolEls[i];
+      const yo = y * cfg.factor;
+      const xo = Math.sin(y * 0.0022 + cfg.phase) * (58 * cfg.factor);
+      const rot = y * cfg.rotSpeed * rotMul;
+      el.style.transform = 'translate3d(' + xo + 'px,' + yo + 'px,0) rotate(' + rot + 'deg)';
+    }
+  }
+
+  function tick() {
+    const y = window.scrollY;
+    if (y !== lastY) {
+      lastY = y;
+      applySymbols(y);
+      idleFrames = 0;
+    } else {
+      idleFrames++;
+    }
+    if (idleFrames < 120) {
+      requestAnimationFrame(tick);
+    } else {
+      live = false;
+    }
+  }
+
+  function kickSymbols() {
+    if (prefersReduced) return;
+    idleFrames = 0;
+    if (!live) {
+      live = true;
+      requestAnimationFrame(tick);
+    }
+  }
+
+  window.addEventListener('scroll', () => {
+    backToTop.classList.toggle('show', window.scrollY > 600);
+    kickSymbols();
+  }, { passive: true });
+
+  window.addEventListener('resize', kickSymbols, { passive: true });
+  window.addEventListener('load', kickSymbols);
+  if (!prefersReduced) {
+    applySymbols(window.scrollY || 0);
+    kickSymbols();
+  }
+
+  /* Robust lord-icon playback (handles not-yet-ready players) */
+  function playLordIcon(icon) {
+    const tryPlay = () => {
+      try {
+        if (typeof icon.playFromBeginning === 'function') {
+          icon.playFromBeginning();
+        } else if (icon.playerInstance && typeof icon.playerInstance.playFromBeginning === 'function') {
+          icon.playerInstance.playFromBeginning();
+        } else if (typeof icon.play === 'function') {
+          icon.play();
+        } else if (icon.playerInstance && typeof icon.playerInstance.play === 'function') {
+          icon.playerInstance.play();
+        } else if (icon.playerInstance && icon.playerInstance.state && icon.playerInstance.state.player) {
+          icon.playerInstance.state.player.play();
+        }
+      } catch (e) {
+        console.warn("Lordicon play failed:", e);
+      }
+    };
+
+    if (icon.playerInstance) {
+      tryPlay();
+      return;
+    }
+    const readyHandler = () => {
+      setTimeout(tryPlay, 100);
+      icon.removeEventListener('ready', readyHandler);
+    };
+    icon.addEventListener('ready', readyHandler);
+    // Fallback: try playing after a short delay in case 'ready' already fired
+    setTimeout(tryPlay, 300);
+  }
+
+  /* Animated count-up for stat numbers (Persian digits) */
+  function animateCounters(scope) {
+    scope.querySelectorAll('.stat-value[data-target]').forEach(valEl => {
+      if (valEl.dataset.done) return;
+      valEl.dataset.done = '1';
+      const target = parseFloat(valEl.dataset.target);
+      const duration = 1800;
+      const start = performance.now();
+      function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 4);
+        valEl.textContent = Math.round(target * eased).toLocaleString('fa-IR');
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  /* Reveals, counters, lord-icons, marquees — IntersectionObserver, no rAF */
+  if ('IntersectionObserver' in window) {
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        if (entry.target.querySelector('.stat-value[data-target]')) {
+          animateCounters(entry.target);
+        }
+        revealObs.unobserve(entry.target);
+      });
+    }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.aww-section, .reveal-section').forEach(el => revealObs.observe(el));
+
+    const iconObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const icon = entry.target.querySelector('lord-icon');
+        if (!icon) return;
+        if (entry.isIntersecting) playLordIcon(icon);
+      });
+    }, { threshold: 0.45 });
+    document.querySelectorAll('.slide-icon-wrap').forEach(el => iconObs.observe(el));
+
+    const marqueeObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        entry.target.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
+      });
+    }, { rootMargin: '80px 0px' });
+    document.querySelectorAll('.marquee-track').forEach(el => {
+      el.style.animationPlayState = 'paused';
+      marqueeObs.observe(el);
+    });
+  } else {
+    document.querySelectorAll('.aww-section, .reveal-section').forEach(el => el.classList.add('is-visible'));
+  }
+
+  /* ─── SLIDER LOGIC ─────────────────────────────── */
+  const slides = [...document.querySelectorAll('.slide')];
+  const dots = [...document.querySelectorAll('.dot')];
+  let currentSlide = 0, slideTimer;
+
+  function goToSlide(index) {
+    if (index === currentSlide) return;
+    slides[currentSlide].classList.remove('active');
+    slides[currentSlide].classList.add('leaving');
+    setTimeout(() => slides[currentSlide]?.classList.remove('leaving'), 700);
+    currentSlide = index;
+    slides[currentSlide].classList.add('active');
+    dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+  }
+
+  function nextSlide() { goToSlide((currentSlide + 1) % slides.length); }
+
+  dots.forEach(d => d.addEventListener('click', () => {
+    clearInterval(slideTimer);
+    goToSlide(+d.dataset.index);
+    slideTimer = setInterval(nextSlide, 5000);
+  }));
+  slideTimer = setInterval(nextSlide, 5000);
+
+  /* ─── BACK TO TOP ──────────────────────────────── */
+  backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+</body>
+</html>
