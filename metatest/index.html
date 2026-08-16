@@ -63,13 +63,53 @@
       width: 100%;
     }
 
-    /* ─── DEPTH LAYERS (PARALLAX ON BACKGROUND) ────── */
+    /* ─── EDGE SYMBOLS (CSS-only, never under copy) ─ */
     .depth-world {
       position: absolute; inset: 0;
-      z-index: 1; pointer-events: none; overflow: hidden;
+      z-index: 0; pointer-events: none; overflow: hidden;
+      contain: paint;
+      -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 2.5%, transparent 8%, transparent 92%, #000 97.5%, #000 100%);
+      mask-image: linear-gradient(90deg, #000 0%, #000 2.5%, transparent 8%, transparent 92%, #000 97.5%, #000 100%);
     }
-    .symbol { position: absolute; pointer-events: none; user-select: none; }
-    .symbol svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 0 14px rgba(216,180,254,0.45)); }
+    .symbol {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform;
+      backface-visibility: hidden;
+      transform: translateZ(0);
+      animation: symbol-float var(--dur, 34s) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation-delay: var(--delay, 0s);
+    }
+    .symbol svg {
+      width: 100%; height: 100%; display: block;
+    }
+    @keyframes symbol-float {
+      0%   { transform: translate3d(0, 0, 0); }
+      25%  { transform: translate3d(var(--dx, 8px), calc(var(--dy, -12px) * 0.35), 0); }
+      50%  { transform: translate3d(0, var(--dy, -12px), 0); }
+      75%  { transform: translate3d(calc(var(--dx, 8px) * -1), calc(var(--dy, -12px) * 0.35), 0); }
+      100% { transform: translate3d(0, 0, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .symbol { animation: none; }
+      .shine-title { animation: none; background-position: 50% 50%; }
+    }
+
+    /* Frosted plates — copy sits on glass, symbols stay in the gutters */
+    .glass-panel {
+      position: relative;
+      isolation: isolate;
+      background:
+        linear-gradient(165deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 38%, rgba(8,8,16,0.62) 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      backdrop-filter: blur(18px) saturate(140%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 24px 50px -28px rgba(0,0,0,0.55);
+    }
 
     .ambient-veil {
       position: fixed; inset: 0; z-index: -1; pointer-events: none;
@@ -80,17 +120,33 @@
 
     /* ─── TYPOGRAPHY & EFFECTS ─────────────────────── */
     .shine-title {
-      background: linear-gradient(to right, var(--accent) 0, #fff 18%, var(--accent2) 36%);
-      background-size: 220% auto;
+      width: fit-content;
+      max-width: 100%;
+      color: var(--accent2);
+      background-image: linear-gradient(
+        90deg,
+        #8B5CF6 0%,
+        #C4B5FD 28%,
+        #FFFFFF 50%,
+        #C4B5FD 72%,
+        #8B5CF6 100%
+      );
+      background-size: 200% 100%;
+      background-position: 0% 50%;
+      background-repeat: repeat-x;
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: shine 16s ease-in-out infinite;
-      color: #fff;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+      animation: shine 8s linear infinite;
     }
+    /* 0% and 100% are the same tile (size 200% → shift 200%), so the loop never snaps.
+       Sweep is linear; the rest of the cycle holds so it does not run constantly. */
     @keyframes shine {
-      0%, 55% { background-position: -220% center; }
-      85%, 100% { background-position: 220% center; }
+      0% { background-position: 0% 50%; }
+      38% { background-position: 200% 50%; }
+      100% { background-position: 200% 50%; }
     }
 
     /* Section eyebrow pill */
@@ -112,7 +168,11 @@
     header {
       position: relative; z-index: 50;
       height: var(--hdr); display: flex; align-items: center; justify-content: space-between;
-      padding: 0 56px; background: transparent;
+      padding: 0 56px;
+      background: rgba(5,5,10,0.55);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      backdrop-filter: blur(16px) saturate(140%);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .logo { display: flex; align-items: center; text-decoration: none; }
     .logo-img { width: 60px; height: 60px; object-fit: contain; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -139,7 +199,10 @@
       width: 100%; max-width: 1200px;
       display: flex; align-items: center; justify-content: space-between; gap: 60px;
     }
-    .hero-slider-wrap { flex: 1; display: flex; flex-direction: column; align-items: flex-start; z-index: 10; }
+    .hero-slider-wrap {
+      flex: 1; display: flex; flex-direction: column; align-items: flex-start; z-index: 10;
+    }
+    .hero-slider-wrap.glass-panel { padding: 32px 36px 28px; }
 
     .slides-container { position: relative; width: 100%; min-height: 160px; margin-bottom: 24px; }
     .slide {
@@ -212,6 +275,7 @@
     /* ─── CINEMATIC FEATURES ───────────────────────── */
     .aww-section { padding: 160px 56px; display: flex; align-items: center; justify-content: center; position: relative; min-height: 70vh; z-index: 10; }
     .feature-container { display: flex; align-items: center; justify-content: space-between; gap: 100px; max-width: 1120px; width: 100%; }
+    .feature-container.glass-panel { padding: 44px 52px; }
     .aww-section:nth-child(even) .feature-container { flex-direction: row-reverse; }
 
     .slide-icon-wrap { flex-shrink: 0; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; position: relative; }
@@ -232,6 +296,7 @@
     /* ─── STATS SECTION ────────────────────────────── */
     .stats-section { padding: 120px 56px 40px; position: relative; z-index: 10; }
     .stats-inner { max-width: 1120px; margin: 0 auto; }
+    .stats-inner.glass-panel { padding: 48px 40px 40px; }
     .stats-head { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 60px; }
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
     .stat-card {
@@ -259,7 +324,11 @@
 
     /* ─── TESTIMONIALS (STUDENT COMMENTS) ──────────── */
     .testimonials-section { padding: 120px 0 60px; position: relative; z-index: 10; overflow: hidden; }
-    .testimonials-head { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 0 24px; margin-bottom: 56px; }
+    .testimonials-head {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      max-width: 760px; margin: 0 auto 56px; padding: 0 24px;
+    }
+    .testimonials-head.glass-panel { padding: 28px 36px 32px; }
     .testimonials-head .sec-desc { text-align: center; }
 
     .marquee-row {
@@ -436,11 +505,26 @@
 
     /* ─── MOBILE / TOUCH PERFORMANCE (esp. iOS Safari) ─ */
     @media (max-width: 900px), (pointer: coarse) {
-      .symbol svg { filter: none; }
-      .t-card, .back-to-top { -webkit-backdrop-filter: none; backdrop-filter: none; }
+      .depth-world {
+        -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 1.5%, transparent 7%, transparent 93%, #000 98.5%, #000 100%);
+        mask-image: linear-gradient(90deg, #000 0%, #000 1.5%, transparent 7%, transparent 93%, #000 98.5%, #000 100%);
+      }
+      .symbol { will-change: auto; }
+      header,
+      .glass-panel,
+      .t-card,
+      .back-to-top {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+      header { background: rgba(5,5,10,0.92); }
+      .glass-panel {
+        background: rgba(8, 8, 16, 0.9);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+      }
       .reveal-element { filter: none !important; transform: translateY(32px); }
       .is-visible .reveal-element { transform: none; filter: none; }
-      .shine-title { animation-duration: 18s; }
+      .shine-title { animation-duration: 9.5s; }
       .slide { filter: none; }
       .slide.active, .slide.leaving { filter: none; }
       .marquee-track { will-change: auto; }
@@ -454,6 +538,7 @@
 
       .hero { padding: 20px 24px 80px; }
       .hero-inner { flex-direction: column; gap: 30px; }
+      .hero-slider-wrap.glass-panel { padding: 24px 20px 20px; }
 
       /* ULTRA-MINIMAL mobile phone mockup */
       .hero-phone-stage { order: 1; height: 380px; width: 100%; align-items: center; }
@@ -472,16 +557,19 @@
 
       .aww-section { padding: 60px 24px; min-height: auto; }
       .feature-container, .aww-section:nth-child(even) .feature-container { flex-direction: column; text-align: center; gap: 30px; }
+      .feature-container.glass-panel { padding: 28px 20px; }
       .slide-text, .aww-section:nth-child(even) .slide-text { align-items: center; }
       .slide-icon-wrap { width: 200px; height: 200px; }
 
       .stats-section { padding: 60px 24px 20px; }
+      .stats-inner.glass-panel { padding: 28px 16px 22px; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
       .stat-card { padding: 28px 14px; }
       .stat-number { font-size: 26px; }
       .stat-suffix { font-size: 18px; }
 
       .testimonials-section { padding: 70px 0 30px; }
+      .testimonials-head.glass-panel { margin: 0 24px 40px; padding: 22px 18px 24px; }
       .t-card { width: 300px; padding: 20px; }
 
       .cta-section { padding: 50px 24px 90px; }
@@ -508,14 +596,8 @@
 <div id="smooth-wrapper">
   <div id="smooth-content">
 
-    <!-- Parallax Symbols moved inside to cover the entire page length to the footer -->
-    <div class="depth-world" id="depth-world">
-      <div class="depth-layer" data-layer="1"></div>
-      <div class="depth-layer" data-layer="2"></div>
-      <div class="depth-layer" data-layer="3"></div>
-      <div class="depth-layer" data-layer="4"></div>
-      <div class="depth-layer" data-layer="5"></div>
-    </div>
+    <!-- Edge-only science symbols (CSS float, not scroll-linked) -->
+    <div class="depth-world" id="depth-world"></div>
 
     <header>
       <a href="#" class="logo" aria-label="Metatest Home">
@@ -536,7 +618,7 @@
     <!-- HERO SECTION -->
     <section class="hero">
       <div class="hero-inner">
-        <div class="hero-slider-wrap">
+        <div class="hero-slider-wrap glass-panel">
           <div class="slides-container">
             <div class="slide active" data-index="0">
               <h1 class="slide-title shine-title">یادگیری هوشمند<br>در محیطی زنده</h1>
@@ -581,7 +663,7 @@
 
     <!-- CINEMATIC FEATURES -->
     <section class="aww-section">
-      <div class="feature-container">
+      <div class="feature-container glass-panel">
         <div class="slide-icon-wrap reveal-element stagger-1">
           <lord-icon src="doodle-motif-10-puzzle-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
         </div>
@@ -593,7 +675,7 @@
     </section>
 
     <section class="aww-section">
-      <div class="feature-container">
+      <div class="feature-container glass-panel">
         <div class="slide-icon-wrap reveal-element stagger-1">
           <lord-icon src="doodle-motif-316-growth-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
         </div>
@@ -605,7 +687,7 @@
     </section>
 
     <section class="aww-section">
-      <div class="feature-container">
+      <div class="feature-container glass-panel">
         <div class="slide-icon-wrap reveal-element stagger-1">
           <lord-icon src="doodle-motif-709-cloud-user-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
         </div>
@@ -618,7 +700,7 @@
 
     <!-- STATS — METATEST AT A GLANCE -->
     <section class="stats-section reveal-section">
-      <div class="stats-inner">
+      <div class="stats-inner glass-panel">
         <div class="stats-head">
           <div class="sec-eyebrow reveal-element stagger-1">متاتست در یک نگاه</div>
           <h2 class="sec-title shine-title reveal-element stagger-2">اعدادی که خودشان حرف می‌زنند</h2>
@@ -659,7 +741,7 @@
 
     <!-- STUDENT TESTIMONIALS -->
     <section class="testimonials-section reveal-section">
-      <div class="testimonials-head">
+      <div class="testimonials-head glass-panel">
         <div class="sec-eyebrow reveal-element stagger-1">نظرات دانش‌آموزان</div>
         <h2 class="sec-title shine-title reveal-element stagger-2">دانش‌آموزان چه می‌گویند؟</h2>
         <p class="sec-desc reveal-element stagger-3">تجربه واقعی کسانی که هر روز با متاتست درس می‌خوانند، تمرین می‌کنند و پیشرفت می‌کنند.</p>
@@ -1086,50 +1168,23 @@
     compass: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="16" r="5" stroke="#E9D5FF" stroke-width="2"/><line x1="50" y1="21" x2="50" y2="30" stroke="#E9D5FF" stroke-width="2.4"/><line x1="50" y1="30" x2="30" y2="82" stroke="#E9D5FF" stroke-width="2.4" stroke-linecap="round"/><line x1="50" y1="30" x2="70" y2="82" stroke="#F5F3FF" stroke-width="2.4" stroke-linecap="round"/><path d="M24 86 A 44 44 0 0 0 76 86" stroke="#FFFFFF" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="50" cy="30" r="2.5" fill="#FFFFFF"/></svg>`,
   };
 
-  /* Expanded document symbols with better distribution */
+  /* Side-gutter symbols only — center of the page stays clear of decorations */
   const SYMBOLS = [
-    // Layer 1 - Background (largest, most transparent)
-    { svg: 'atom', layer: 1, x: 3, y: 4, scale: 3.8, opacity: 0.138, factor: 0.5, rotSpeed: 1.0, phase: 0 },
-    { svg: 'molecule', layer: 1, x: 88, y: 8, scale: 3.2, opacity: 0.162, factor: 0.48, rotSpeed: -0.9, phase: 2 },
-    { svg: 'cell', layer: 1, x: 82, y: 18, scale: 3.5, opacity: 0.138, factor: 0.42, rotSpeed: 0.7, phase: 4 },
-    { svg: 'wave', layer: 1, x: 10, y: 15, scale: 3.0, opacity: 0.184, factor: 0.45, rotSpeed: -0.7, phase: 6 },
-    { svg: 'planet', layer: 1, x: 6, y: 55, scale: 3.4, opacity: 0.138, factor: 0.46, rotSpeed: 0.5, phase: 8 },
-
-    // Layer 2 - Mid-background
-    { svg: 'helix', layer: 2, x: 7, y: 26, scale: 2.5, opacity: 0.22, factor: 0.38, rotSpeed: -1.1, phase: 1 },
-    { svg: 'pi', layer: 2, x: 93, y: 30, scale: 2.3, opacity: 0.206, factor: 0.36, rotSpeed: 0.85, phase: 3 },
-    { svg: 'pendulum', layer: 2, x: 15, y: 36, scale: 2.4, opacity: 0.22, factor: 0.33, rotSpeed: -0.65, phase: 5 },
-    { svg: 'flask', layer: 2, x: 85, y: 40, scale: 2.6, opacity: 0.162, factor: 0.34, rotSpeed: 1.15, phase: 7 },
-    { svg: 'sigma', layer: 2, x: 4, y: 46, scale: 2.2, opacity: 0.22, factor: 0.3, rotSpeed: 0.95, phase: 2 },
-    { svg: 'benzene', layer: 2, x: 90, y: 50, scale: 2.4, opacity: 0.22, factor: 0.32, rotSpeed: -0.8, phase: 9 },
-    { svg: 'telescope', layer: 2, x: 12, y: 52, scale: 2.1, opacity: 0.22, factor: 0.31, rotSpeed: 0.6, phase: 6 },
-
-    // Layer 3 - Mid-foreground
-    { svg: 'brain', layer: 3, x: 78, y: 56, scale: 2.0, opacity: 0.189, factor: 0.28, rotSpeed: 0.75, phase: 8 },
-    { svg: 'magnet', layer: 3, x: 20, y: 60, scale: 1.8, opacity: 0.216, factor: 0.26, rotSpeed: -1.3, phase: 4 },
-    { svg: 'infinity', layer: 3, x: 92, y: 62, scale: 1.9, opacity: 0.203, factor: 0.24, rotSpeed: 1.4, phase: 1 },
-    { svg: 'microscope', layer: 3, x: 10, y: 66, scale: 1.7, opacity: 0.23, factor: 0.22, rotSpeed: -0.55, phase: 6 },
-    { svg: 'prism', layer: 3, x: 82, y: 70, scale: 1.6, opacity: 0.243, factor: 0.2, rotSpeed: 1.05, phase: 3 },
-    { svg: 'testTube', layer: 3, x: 25, y: 72, scale: 1.5, opacity: 0.27, factor: 0.19, rotSpeed: -1.15, phase: 9 },
-    { svg: 'chromosome', layer: 3, x: 88, y: 76, scale: 1.6, opacity: 0.243, factor: 0.21, rotSpeed: 0.9, phase: 5 },
-    { svg: 'integral', layer: 3, x: 8, y: 78, scale: 1.5, opacity: 0.257, factor: 0.2, rotSpeed: -0.7, phase: 2 },
-
-    // Layer 4 - Foreground (smallest, most opaque)
-    { svg: 'math', layer: 4, x: 88, y: 80, scale: 1.3, opacity: 0.324, factor: 0.16, rotSpeed: 1.8, phase: 0 },
-    { svg: 'leaf', layer: 4, x: 6, y: 82, scale: 1.2, opacity: 0.351, factor: 0.15, rotSpeed: -1.6, phase: 5 },
-    { svg: 'gravity', layer: 4, x: 30, y: 84, scale: 1.1, opacity: 0.378, factor: 0.13, rotSpeed: 0.7, phase: 2 },
-    { svg: 'beaker', layer: 4, x: 80, y: 87, scale: 1.0, opacity: 0.405, factor: 0.12, rotSpeed: -1.9, phase: 7 },
-    { svg: 'function', layer: 4, x: 15, y: 88, scale: 0.95, opacity: 0.42, factor: 0.11, rotSpeed: 1.55, phase: 4 },
-    { svg: 'root', layer: 4, x: 70, y: 90, scale: 0.85, opacity: 0.42, factor: 0.1, rotSpeed: -0.85, phase: 1 },
-    { svg: 'rocket', layer: 4, x: 42, y: 91, scale: 0.8, opacity: 0.42, factor: 0.1, rotSpeed: 1.2, phase: 6 },
-    { svg: 'compass', layer: 4, x: 55, y: 93, scale: 0.75, opacity: 0.42, factor: 0.09, rotSpeed: -1.1, phase: 9 },
-    { svg: 'atom', layer: 4, x: 28, y: 93, scale: 0.7, opacity: 0.42, factor: 0.09, rotSpeed: 2.0, phase: 8 },
-    { svg: 'lightning', layer: 4, x: 5, y: 94, scale: 0.65, opacity: 0.42, factor: 0.08, rotSpeed: -1.4, phase: 3 }
+    { svg: 'atom',       side: 'left',  y: 20, scale: 0.95, opacity: 0.11, dur: 36, dx: 7, dy: -11, phase: 0 },
+    { svg: 'helix',      side: 'right', y: 26, scale: 0.9,  opacity: 0.1,  dur: 40, dx: -6, dy: 10, phase: 2 },
+    { svg: 'flask',      side: 'left',  y: 36, scale: 0.9,  opacity: 0.11, dur: 32, dx: 5, dy: -9, phase: 4 },
+    { svg: 'pi',         side: 'right', y: 42, scale: 0.85, opacity: 0.1,  dur: 38, dx: -7, dy: 8, phase: 1 },
+    { svg: 'pendulum',   side: 'left',  y: 52, scale: 0.9,  opacity: 0.1,  dur: 42, dx: 6, dy: -11, phase: 6 },
+    { svg: 'benzene',    side: 'right', y: 56, scale: 0.9,  opacity: 0.11, dur: 34, dx: -5, dy: 10, phase: 3 },
+    { svg: 'brain',      side: 'left',  y: 66, scale: 0.85, opacity: 0.1,  dur: 30, dx: 8, dy: -8, phase: 5 },
+    { svg: 'prism',      side: 'right', y: 70, scale: 0.85, opacity: 0.11, dur: 44, dx: -6, dy: 9, phase: 7 },
+    { svg: 'microscope', side: 'left',  y: 80, scale: 0.8,  opacity: 0.1,  dur: 37, dx: 6, dy: -10, phase: 8 },
+    { svg: 'infinity',   side: 'right', y: 84, scale: 0.8,  opacity: 0.1,  dur: 33, dx: -8, dy: 7, phase: 2 },
+    { svg: 'math',       side: 'left',  y: 92, scale: 0.8,  opacity: 0.11, dur: 39, dx: 7, dy: -9, phase: 4 },
+    { svg: 'leaf',       side: 'right', y: 96, scale: 0.8,  opacity: 0.1,  dur: 35, dx: -6, dy: 9, phase: 1 }
   ];
 
   const world = document.getElementById('depth-world');
-  const symbolEls = [];
-  const smoothContent = document.getElementById('smooth-content');
   const backToTop = document.getElementById('back-to-top');
 
   const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent)
@@ -1137,76 +1192,32 @@
   const isMobile = window.innerWidth <= 900 || isIOS;
   if (isIOS) document.documentElement.classList.add('is-ios');
 
-  // iOS: fewer, closer symbols (giant background ones are the most expensive to composite)
-  const symbolSource = isIOS ? SYMBOLS.filter(s => s.layer >= 3) : SYMBOLS;
-
-  symbolSource.forEach(raw => {
-    const cfg = isMobile ? {
-      ...raw,
-      scale: raw.scale * 0.72,
-      opacity: Math.min(raw.opacity * 1.7, 0.55),
-      factor: raw.factor * 1.7,
-      rotSpeed: raw.rotSpeed * 1.5
-    } : raw;
-    if (isMobile) {
-      const widthPct = (80 * cfg.scale / window.innerWidth) * 100;
-      cfg.x = Math.min(Math.max(cfg.x, 2), Math.max(2, 96 - widthPct));
-    }
-
+  SYMBOLS.forEach((cfg) => {
     const el = document.createElement('div');
     el.className = 'symbol';
-    const size = 80 * cfg.scale;
-    el.style.width = size + 'px'; el.style.height = size + 'px';
-    el.style.left = cfg.x + '%'; el.style.top = cfg.y + '%';
-    el.style.opacity = cfg.opacity; el.style.zIndex = cfg.layer;
+    const scale = isMobile ? cfg.scale * 0.72 : cfg.scale;
+    const size = 64 * scale;
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.top = cfg.y + '%';
+    if (cfg.side === 'right') {
+      el.style.right = '6px';
+      el.style.left = 'auto';
+    } else {
+      el.style.left = '6px';
+    }
+    el.style.opacity = cfg.opacity;
+    el.style.setProperty('--dur', cfg.dur + 's');
+    el.style.setProperty('--delay', (-cfg.phase * 3.4) + 's');
+    el.style.setProperty('--dx', (isMobile ? cfg.dx * 0.55 : cfg.dx) + 'px');
+    el.style.setProperty('--dy', (isMobile ? cfg.dy * 0.55 : cfg.dy) + 'px');
     if (cfg.svg && SVG_LIB[cfg.svg]) el.innerHTML = SVG_LIB[cfg.svg];
     world.appendChild(el);
-    symbolEls.push({ el, cfg, size });
   });
-
-  /* ─── SCROLL + REVEAL ENGINE (native document scroll) ─ */
-  let worldH = 0;
-  let wH = window.innerHeight;
-  let ticking = false;
-
-  function measure() {
-    worldH = smoothContent.offsetHeight;
-    wH = window.innerHeight;
-  }
-
-  function updateParallax() {
-    ticking = false;
-    const y = Math.max(0, window.scrollY);
-
-    for (let i = 0; i < symbolEls.length; i++) {
-      const { el, cfg, size } = symbolEls[i];
-      const scrollOffset = y * cfg.factor;
-      const effectiveTop = (worldH * cfg.y / 100) + scrollOffset;
-      if (worldH && (effectiveTop + size < y - 250 || effectiveTop > y + wH + 250)) continue;
-
-      if (isIOS) {
-        // Translate only — rotate + sin() every frame is what still janks Safari
-        el.style.transform = `translate3d(0, ${scrollOffset}px, 0)`;
-      } else {
-        const driftX = Math.sin((y * 0.002) + cfg.phase) * (50 * cfg.factor);
-        const rot = (y * cfg.rotSpeed * 0.12) % 360;
-        el.style.transform = `translate3d(${driftX}px, ${scrollOffset}px, 0) rotate(${rot}deg)`;
-      }
-    }
-  }
 
   window.addEventListener('scroll', () => {
     backToTop.classList.toggle('show', window.scrollY > 600);
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(updateParallax);
-    }
   }, { passive: true });
-
-  window.addEventListener('resize', measure, { passive: true });
-  window.addEventListener('load', () => { measure(); updateParallax(); });
-  measure();
-  updateParallax();
 
   /* Robust lord-icon playback (handles not-yet-ready players) */
   function playLordIcon(icon) {
