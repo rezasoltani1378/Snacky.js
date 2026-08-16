@@ -63,13 +63,10 @@
       width: 100%;
     }
 
-    /* ─── EDGE SYMBOLS (CSS-only, never under copy) ─ */
+    /* ─── EDGE SYMBOLS (CSS-only float, sides of the page) ─ */
     .depth-world {
       position: absolute; inset: 0;
       z-index: 0; pointer-events: none; overflow: hidden;
-      contain: paint;
-      -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 2.5%, transparent 8%, transparent 92%, #000 97.5%, #000 100%);
-      mask-image: linear-gradient(90deg, #000 0%, #000 2.5%, transparent 8%, transparent 92%, #000 97.5%, #000 100%);
     }
     .symbol {
       position: absolute;
@@ -83,6 +80,7 @@
     }
     .symbol svg {
       width: 100%; height: 100%; display: block;
+      filter: drop-shadow(0 0 14px rgba(196,181,253,0.32));
     }
     @keyframes symbol-float {
       0%   { transform: translate3d(0, 0, 0); }
@@ -96,7 +94,7 @@
       .shine-title { animation: none; background-position: 50% 50%; }
     }
 
-    /* Frosted plates — copy sits on glass, symbols stay in the gutters */
+    /* Frosted plates for stats + testimonials headings only */
     .glass-panel {
       position: relative;
       isolation: isolate;
@@ -199,10 +197,7 @@
       width: 100%; max-width: 1200px;
       display: flex; align-items: center; justify-content: space-between; gap: 60px;
     }
-    .hero-slider-wrap {
-      flex: 1; display: flex; flex-direction: column; align-items: flex-start; z-index: 10;
-    }
-    .hero-slider-wrap.glass-panel { padding: 32px 36px 28px; }
+    .hero-slider-wrap { flex: 1; display: flex; flex-direction: column; align-items: flex-start; z-index: 10; }
 
     .slides-container { position: relative; width: 100%; min-height: 160px; margin-bottom: 24px; }
     .slide {
@@ -275,7 +270,6 @@
     /* ─── CINEMATIC FEATURES ───────────────────────── */
     .aww-section { padding: 160px 56px; display: flex; align-items: center; justify-content: center; position: relative; min-height: 70vh; z-index: 10; }
     .feature-container { display: flex; align-items: center; justify-content: space-between; gap: 100px; max-width: 1120px; width: 100%; }
-    .feature-container.glass-panel { padding: 44px 52px; }
     .aww-section:nth-child(even) .feature-container { flex-direction: row-reverse; }
 
     .slide-icon-wrap { flex-shrink: 0; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; position: relative; }
@@ -505,11 +499,8 @@
 
     /* ─── MOBILE / TOUCH PERFORMANCE (esp. iOS Safari) ─ */
     @media (max-width: 900px), (pointer: coarse) {
-      .depth-world {
-        -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 1.5%, transparent 7%, transparent 93%, #000 98.5%, #000 100%);
-        mask-image: linear-gradient(90deg, #000 0%, #000 1.5%, transparent 7%, transparent 93%, #000 98.5%, #000 100%);
-      }
       .symbol { will-change: auto; }
+      .symbol svg { filter: none; }
       header,
       .glass-panel,
       .t-card,
@@ -538,7 +529,6 @@
 
       .hero { padding: 20px 24px 80px; }
       .hero-inner { flex-direction: column; gap: 30px; }
-      .hero-slider-wrap.glass-panel { padding: 24px 20px 20px; }
 
       /* ULTRA-MINIMAL mobile phone mockup */
       .hero-phone-stage { order: 1; height: 380px; width: 100%; align-items: center; }
@@ -557,7 +547,6 @@
 
       .aww-section { padding: 60px 24px; min-height: auto; }
       .feature-container, .aww-section:nth-child(even) .feature-container { flex-direction: column; text-align: center; gap: 30px; }
-      .feature-container.glass-panel { padding: 28px 20px; }
       .slide-text, .aww-section:nth-child(even) .slide-text { align-items: center; }
       .slide-icon-wrap { width: 200px; height: 200px; }
 
@@ -618,7 +607,7 @@
     <!-- HERO SECTION -->
     <section class="hero">
       <div class="hero-inner">
-        <div class="hero-slider-wrap glass-panel">
+        <div class="hero-slider-wrap">
           <div class="slides-container">
             <div class="slide active" data-index="0">
               <h1 class="slide-title shine-title">یادگیری هوشمند<br>در محیطی زنده</h1>
@@ -663,7 +652,7 @@
 
     <!-- CINEMATIC FEATURES -->
     <section class="aww-section">
-      <div class="feature-container glass-panel">
+      <div class="feature-container">
         <div class="slide-icon-wrap reveal-element stagger-1">
           <lord-icon src="doodle-motif-10-puzzle-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
         </div>
@@ -675,7 +664,7 @@
     </section>
 
     <section class="aww-section">
-      <div class="feature-container glass-panel">
+      <div class="feature-container">
         <div class="slide-icon-wrap reveal-element stagger-1">
           <lord-icon src="doodle-motif-316-growth-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
         </div>
@@ -687,7 +676,7 @@
     </section>
 
     <section class="aww-section">
-      <div class="feature-container glass-panel">
+      <div class="feature-container">
         <div class="slide-icon-wrap reveal-element stagger-1">
           <lord-icon src="doodle-motif-709-cloud-user-in-reveal.json" colors="primary:#F8F7FF,secondary:#8b5cf6" style="width:100%;height:100%"></lord-icon>
         </div>
@@ -1168,20 +1157,22 @@
     compass: `<svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="16" r="5" stroke="#E9D5FF" stroke-width="2"/><line x1="50" y1="21" x2="50" y2="30" stroke="#E9D5FF" stroke-width="2.4"/><line x1="50" y1="30" x2="30" y2="82" stroke="#E9D5FF" stroke-width="2.4" stroke-linecap="round"/><line x1="50" y1="30" x2="70" y2="82" stroke="#F5F3FF" stroke-width="2.4" stroke-linecap="round"/><path d="M24 86 A 44 44 0 0 0 76 86" stroke="#FFFFFF" stroke-width="1.4" stroke-dasharray="4 3"/><circle cx="50" cy="30" r="2.5" fill="#FFFFFF"/></svg>`,
   };
 
-  /* Side-gutter symbols only — center of the page stays clear of decorations */
+  /* Side-gutter symbols from the first screen down the page. y is % of full page height. */
   const SYMBOLS = [
-    { svg: 'atom',       side: 'left',  y: 20, scale: 0.95, opacity: 0.11, dur: 36, dx: 7, dy: -11, phase: 0 },
-    { svg: 'helix',      side: 'right', y: 26, scale: 0.9,  opacity: 0.1,  dur: 40, dx: -6, dy: 10, phase: 2 },
-    { svg: 'flask',      side: 'left',  y: 36, scale: 0.9,  opacity: 0.11, dur: 32, dx: 5, dy: -9, phase: 4 },
-    { svg: 'pi',         side: 'right', y: 42, scale: 0.85, opacity: 0.1,  dur: 38, dx: -7, dy: 8, phase: 1 },
-    { svg: 'pendulum',   side: 'left',  y: 52, scale: 0.9,  opacity: 0.1,  dur: 42, dx: 6, dy: -11, phase: 6 },
-    { svg: 'benzene',    side: 'right', y: 56, scale: 0.9,  opacity: 0.11, dur: 34, dx: -5, dy: 10, phase: 3 },
-    { svg: 'brain',      side: 'left',  y: 66, scale: 0.85, opacity: 0.1,  dur: 30, dx: 8, dy: -8, phase: 5 },
-    { svg: 'prism',      side: 'right', y: 70, scale: 0.85, opacity: 0.11, dur: 44, dx: -6, dy: 9, phase: 7 },
-    { svg: 'microscope', side: 'left',  y: 80, scale: 0.8,  opacity: 0.1,  dur: 37, dx: 6, dy: -10, phase: 8 },
-    { svg: 'infinity',   side: 'right', y: 84, scale: 0.8,  opacity: 0.1,  dur: 33, dx: -8, dy: 7, phase: 2 },
-    { svg: 'math',       side: 'left',  y: 92, scale: 0.8,  opacity: 0.11, dur: 39, dx: 7, dy: -9, phase: 4 },
-    { svg: 'leaf',       side: 'right', y: 96, scale: 0.8,  opacity: 0.1,  dur: 35, dx: -6, dy: 9, phase: 1 }
+    { svg: 'atom',       side: 'left',  y: 6,  scale: 1.85, opacity: 0.22, dur: 36, dx: 10, dy: -14, phase: 0 },
+    { svg: 'helix',      side: 'right', y: 8,  scale: 1.65, opacity: 0.2,  dur: 40, dx: -8, dy: 12, phase: 2 },
+    { svg: 'flask',      side: 'left',  y: 16, scale: 1.5,  opacity: 0.2,  dur: 32, dx: 8, dy: -12, phase: 4 },
+    { svg: 'pi',         side: 'right', y: 18, scale: 1.4,  opacity: 0.19, dur: 38, dx: -10, dy: 10, phase: 1 },
+    { svg: 'pendulum',   side: 'left',  y: 28, scale: 1.55, opacity: 0.2,  dur: 42, dx: 9, dy: -14, phase: 6 },
+    { svg: 'benzene',    side: 'right', y: 32, scale: 1.5,  opacity: 0.21, dur: 34, dx: -7, dy: 12, phase: 3 },
+    { svg: 'brain',      side: 'left',  y: 42, scale: 1.4,  opacity: 0.19, dur: 30, dx: 11, dy: -10, phase: 5 },
+    { svg: 'prism',      side: 'right', y: 46, scale: 1.35, opacity: 0.2,  dur: 44, dx: -9, dy: 11, phase: 7 },
+    { svg: 'wave',       side: 'left',  y: 56, scale: 1.45, opacity: 0.2,  dur: 37, dx: 8, dy: -13, phase: 8 },
+    { svg: 'microscope', side: 'right', y: 60, scale: 1.3,  opacity: 0.19, dur: 35, dx: -8, dy: 10, phase: 2 },
+    { svg: 'infinity',   side: 'left',  y: 70, scale: 1.25, opacity: 0.2,  dur: 33, dx: 10, dy: -9, phase: 4 },
+    { svg: 'math',       side: 'right', y: 74, scale: 1.25, opacity: 0.21, dur: 39, dx: -9, dy: 12, phase: 1 },
+    { svg: 'leaf',       side: 'left',  y: 84, scale: 1.2,  opacity: 0.19, dur: 35, dx: 8, dy: -11, phase: 6 },
+    { svg: 'planet',     side: 'right', y: 88, scale: 1.35, opacity: 0.2,  dur: 41, dx: -7, dy: 13, phase: 3 }
   ];
 
   const world = document.getElementById('depth-world');
@@ -1195,18 +1186,18 @@
   SYMBOLS.forEach((cfg) => {
     const el = document.createElement('div');
     el.className = 'symbol';
-    const scale = isMobile ? cfg.scale * 0.72 : cfg.scale;
-    const size = 64 * scale;
+    const scale = isMobile ? cfg.scale * 0.62 : cfg.scale;
+    const size = 80 * scale;
     el.style.width = size + 'px';
     el.style.height = size + 'px';
     el.style.top = cfg.y + '%';
     if (cfg.side === 'right') {
-      el.style.right = '6px';
+      el.style.right = isMobile ? '2%' : '2.4%';
       el.style.left = 'auto';
     } else {
-      el.style.left = '6px';
+      el.style.left = isMobile ? '2%' : '2.4%';
     }
-    el.style.opacity = cfg.opacity;
+    el.style.opacity = isMobile ? Math.min(cfg.opacity * 1.15, 0.28) : cfg.opacity;
     el.style.setProperty('--dur', cfg.dur + 's');
     el.style.setProperty('--delay', (-cfg.phase * 3.4) + 's');
     el.style.setProperty('--dx', (isMobile ? cfg.dx * 0.55 : cfg.dx) + 'px');
